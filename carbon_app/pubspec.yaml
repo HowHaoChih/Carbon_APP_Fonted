@@ -35,6 +35,7 @@ dependencies:
 
   # 本地文件存取（如讀寫 JSON 文件）
   path_provider: ^2.0.15
+  csv: ^6.0.0
 
   # 本地化支持，用於多語言環境
   flutter_localizations:
@@ -57,10 +58,10 @@ flutter:
   # 啟用 Material Icons 字體
   uses-material-design: true
 
-  # 靜態資產，如圖片或 JSON 數據
+  # 靜態資產，如圖片或 csv 數據
   assets:
     - assets/images/ # 圖片資產
-    - assets/data/ # 數據文件（如 JSON）
+    - assets/data/ # 數據文件（如 csv）
 
 
   # 自定義字體
