@@ -28,18 +28,19 @@ class _CityChartState extends State<CityChart> {
   void loadData() async {
     // Load datasets
     final totalEmissionData =
-        await rootBundle.loadString('assets/總碳排(各部門加總)_10ktonCO2e.csv');
+        await rootBundle.loadString('assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
     final residentialData =
-        await rootBundle.loadString('assets/住宅部門碳排_10ktonCO2e.csv');
+        await rootBundle.loadString('assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv');
     final servicesData =
-        await rootBundle.loadString('assets/服務業部門碳排_10ktonCO2e.csv');
-    final energyData = await rootBundle.loadString('assets/能源部門碳排_10ktonCO2e.csv');
+        await rootBundle.loadString('assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv');
+    final energyData = 
+        await rootBundle.loadString('assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv');
     final manufacturingData =
-        await rootBundle.loadString('assets/製造業與營造業碳排_10ktonCO2e.csv');
+        await rootBundle.loadString('assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv');
     final transportationData =
-        await rootBundle.loadString('assets/運輸部門碳排_10ktonCO2e.csv');
+        await rootBundle.loadString('assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv');
     final electricityData =
-        await rootBundle.loadString('assets/電力碳排_10ktonCO2e.csv');
+        await rootBundle.loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
 
     // Parse CSV data
     final cityIndex = _getCityIndex(widget.city);

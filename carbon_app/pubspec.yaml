@@ -60,8 +60,14 @@ flutter:
 
   # 靜態資產，如圖片或 csv 數據
   assets:
-    - assets/images/ # 圖片資產
-    - assets/data/ # 數據文件（如 csv）
+    - assets/images/Pigeon.jpeg                        # Image asset
+    - assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv
 
 
   # 自定義字體
