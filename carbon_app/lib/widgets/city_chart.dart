@@ -24,6 +24,13 @@ class _CityChartState extends State<CityChart> {
     super.initState();
     loadData();
   }
+  @override
+  void didUpdateWidget(CityChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.city != widget.city) {
+      loadData(); // 重新加載新城市的資料
+    }
+  }
 
   void loadData() async {
     final totalEmissionData = await rootBundle.loadString(
