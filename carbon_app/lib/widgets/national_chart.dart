@@ -23,24 +23,23 @@ class _NationalChartState extends State<NationalChart> {
     loadData();
   }
 
+  /// 加載數據並處理為可視化所需的格式
   void loadData() async {
-    // Load CSV files
-    final totalEmissionData =
-        await rootBundle.loadString('assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
-    final residentialData =
-        await rootBundle.loadString('assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv');
-    final servicesData =
-        await rootBundle.loadString('assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv');
-    final energyData = 
-        await rootBundle.loadString('assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv');
-    final manufacturingData =
-        await rootBundle.loadString('assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv');
-    final transportationData =
-        await rootBundle.loadString('assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv');
-    final electricityData =
-        await rootBundle.loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
+    final totalEmissionData = await rootBundle.loadString(
+        'assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
+    final residentialData = await rootBundle.loadString(
+        'assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv');
+    final servicesData = await rootBundle.loadString(
+        'assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv');
+    final energyData = await rootBundle
+        .loadString('assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv');
+    final manufacturingData = await rootBundle.loadString(
+        'assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv');
+    final transportationData = await rootBundle.loadString(
+        'assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv');
+    final electricityData = await rootBundle
+        .loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
 
-    // Parse CSV data
     final totalRows = const LineSplitter().convert(totalEmissionData);
     final residentialRows = const LineSplitter().convert(residentialData);
     final servicesRows = const LineSplitter().convert(servicesData);
@@ -60,21 +59,19 @@ class _NationalChartState extends State<NationalChart> {
 
     final yearRange = List<int>.generate(2024 - 1990, (i) => 1990 + i);
 
-    // Process data for each department
     departmentData = {};
     for (final department in allDepartments.keys) {
       departmentData[department] = List<double>.filled(yearRange.length, 0);
       for (var i = 1; i < allDepartments[department]!.length; i++) {
         final row = allDepartments[department]![i].split(',');
         final year = int.parse(row[0]);
-        final value = double.parse(row[2]); // Column 3 for each department
+        final value = double.parse(row[2]);
         if (year >= 1990 && year <= 2023) {
           departmentData[department]![year - 1990] += value;
         }
       }
     }
 
-    // Total emissions and trend line
     years = yearRange;
     totalEmissions = List<double>.filled(yearRange.length, 0);
     for (var i = 0; i < yearRange.length; i++) {
@@ -83,20 +80,26 @@ class _NationalChartState extends State<NationalChart> {
       }
     }
 
-    // Generate BarChartGroupData
-    barGroups = years.map((year) {
-      final index = year - 1990;
+    barGroups = List.generate(yearRange.length, (index) {
       double stackBottom = 0;
       final rods = departmentData.keys.map((department) {
         final value = departmentData[department]![index];
-        final rod = BarChartRodData(toY: value + stackBottom, color: _getColorForDepartment(department));
+        final rod = BarChartRodData(
+          fromY: stackBottom,
+          toY: stackBottom + value,
+          color: _getColorForDepartment(department),
+          width: 8, // 調整柱狀圖寬度
+        );
         stackBottom += value;
         return rod;
       }).toList();
-      return BarChartGroupData(x: year, barRods: rods);
-    }).toList();
+      return BarChartGroupData(
+        x: years[index],
+        barRods: rods,
+        barsSpace: 0, // 保持單一年內無間距
+      );
+    });
 
-    // Generate trend line
     trendLine = List.generate(
       years.length,
       (index) => FlSpot(years[index].toDouble(), totalEmissions[index]),
@@ -105,6 +108,7 @@ class _NationalChartState extends State<NationalChart> {
     setState(() {});
   }
 
+  /// 分配顏色
   Color _getColorForDepartment(String department) {
     switch (department) {
       case "Residential":
@@ -126,42 +130,52 @@ class _NationalChartState extends State<NationalChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: barGroups.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : BarChart(
-                BarChartData(
-                  barGroups: barGroups,
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, _) =>
-                            Text(value.toInt().toString()),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: 800,
+        child: Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: barGroups.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : BarChart(
+                    BarChartData(
+                      barGroups: barGroups,
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, _) => Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: true),
+                        ),
+                      ),
+                      barTouchData: BarTouchData(enabled: true),
+                      gridData: FlGridData(show: true),
+                      extraLinesData: ExtraLinesData(
+                        horizontalLines: [
+                          HorizontalLine(
+                            y: totalEmissions.isNotEmpty
+                                ? totalEmissions.last
+                                : 0,
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        ],
                       ),
                     ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
-                    ),
                   ),
-                  extraLinesData: ExtraLinesData(
-                    extraLinesOnTop: true,
-                    horizontalLines: [
-                      HorizontalLine(
-                        y: trendLine.isNotEmpty
-                            ? trendLine.last.y
-                            : 0, // Plot the trend line
-                        color: Colors.black,
-                        strokeWidth: 2,
-                      )
-                    ],
-                  ),
-                ),
-              ),
+          ),
+        ),
       ),
     );
   }
