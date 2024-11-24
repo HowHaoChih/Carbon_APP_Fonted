@@ -34,7 +34,7 @@ dependencies:
   shared_preferences: ^2.0.13
 
   # 本地文件存取（如讀寫 JSON 文件）
-  path_provider: ^2.0.15
+  #path_provider: ^2.0.15
   csv: ^6.0.0
 
   # 本地化支持，用於多語言環境
