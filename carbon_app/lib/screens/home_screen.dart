@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import '../widgets/national_chart.dart'; // 引入全國碳排放圖表的 widget
-import '../widgets/city_chart.dart'; // 引入城市碳排放圖表的 widget
-import 'package:flutter/material.dart';
+import '../widgets/city_chart.dart'; // 引入碳排放圖表的 widget
 import 'home_page.dart';
 import 'industry_page.dart';
 import 'county_industry_page.dart';
@@ -18,6 +16,26 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // 預設選擇的城市名稱，初始值為 "台北市"
   String selectedCity = "台北市";
+
+  // 所有產業選項
+  final List<String> allDepartments = [
+    "Residential",
+    "Services",
+    "Energy",
+    "Manufacturing",
+    "Transportation",
+    "Electricity"
+  ];
+
+  // 初始選中的產業
+  Set<String> selectedDepartments = {
+    "Residential",
+    "Services",
+    "Energy",
+    "Manufacturing",
+    "Transportation",
+    "Electricity"
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +107,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             // 全國碳排放趨勢圖表
-            const Expanded(
+            Expanded(
               flex: 2, // 占用父容器 2 倍的空間
-              child: NationalChart(), // 顯示全國碳排放趨勢的自定義 widget
+              child: CityChart(
+                city: "Total",
+                selectedDepartments: selectedDepartments,
+              ), // 顯示全國碳排放趨勢的自定義 widget
             ),
             const SizedBox(height: 16), // 垂直間距
             // 城市碳排放趨勢圖
@@ -142,7 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   // 城市碳排放趨勢圖表
                   Expanded(
-                    child: CityChart(city: selectedCity), // 顯示選中城市的碳排放數據
+                    child: CityChart(
+                      city: selectedCity,
+                      selectedDepartments: selectedDepartments,
+                    ), // 顯示選中城市的碳排放數據
                   ),
                 ],
               ),

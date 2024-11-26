@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'dart:math';
 
 class CityChart extends StatefulWidget {
-  final String city;
+  final String city; // 城市名稱
+  final Set<String> selectedDepartments; // 傳入的選中產業
 
-  const CityChart({required this.city, super.key});
+  const CityChart({
+    required this.city,
+    required this.selectedDepartments,
+    super.key,
+  });
 
   @override
   State<CityChart> createState() => _CityChartState();
@@ -14,27 +20,45 @@ class CityChart extends StatefulWidget {
 
 class _CityChartState extends State<CityChart> {
   List<BarChartGroupData> barGroups = [];
-  List<FlSpot> trendLine = [];
   List<int> years = [];
-  List<double> totalEmissions = [];
   Map<String, List<double>> departmentData = {};
+  double maxValue = 0; // 用於存儲柱狀圖中的最大值
+  double adjustedMaxValue = 0; // 調整後的最大值（取整）
+
+  final List<String> allDepartments = [
+    "Residential",
+    "Services",
+    "Energy",
+    "Manufacturing",
+    "Transportation",
+    "Electricity"
+  ]; // 固定產業順序
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadData();
   }
+
   @override
   void didUpdateWidget(CityChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.city != widget.city) {
-      loadData(); // 重新加載新城市的資料
+    // 檢查城市或選中產業集合是否發生變化
+    if (oldWidget.city != widget.city ||
+        !_isSetEqual(
+            oldWidget.selectedDepartments, widget.selectedDepartments)) {
+      _loadData();
     }
   }
 
-  void loadData() async {
-    final totalEmissionData = await rootBundle.loadString(
-        'assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
+  bool _isSetEqual(Set<String> set1, Set<String> set2) {
+    // 比較兩個 Set 是否相等
+    return set1.length == set2.length && set1.difference(set2).isEmpty;
+  }
+
+  void _loadData() async {
     final residentialData = await rootBundle.loadString(
         'assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv');
     final servicesData = await rootBundle.loadString(
@@ -49,7 +73,7 @@ class _CityChartState extends State<CityChart> {
         .loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
 
     final cityIndex = _getCityIndex(widget.city);
-    final allDepartments = {
+    final allDataFiles = {
       "Residential": residentialData,
       "Services": servicesData,
       "Energy": energyData,
@@ -61,56 +85,93 @@ class _CityChartState extends State<CityChart> {
     final yearRange = List<int>.generate(2024 - 1990, (i) => 1990 + i);
 
     departmentData = {};
-    for (final department in allDepartments.keys) {
+    maxValue = 0; // 初始化最大值
+
+    // 解析每個部門的資料
+    for (final department in allDepartments) {
+      final data = allDataFiles[department];
       departmentData[department] = List<double>.filled(yearRange.length, 0);
-      final rows = const LineSplitter().convert(allDepartments[department]!);
-      for (var i = 1; i < rows.length; i++) {
-        final row = rows[i].split(',');
-        final year = int.parse(row[0]);
-        final value = double.parse(row[cityIndex]);
-        if (year >= 1990 && year <= 2023) {
-          departmentData[department]![year - 1990] += value;
+      if (data != null) {
+        final rows = const LineSplitter().convert(data);
+        for (var i = 1; i < rows.length; i++) {
+          final row = rows[i].split(',');
+          final year = int.parse(row[0]);
+          final value = double.parse(row[cityIndex]);
+          if (year >= 1990 && year <= 2023) {
+            departmentData[department]![year - 1990] += value;
+          }
         }
       }
     }
 
     years = yearRange;
-    totalEmissions = List<double>.filled(yearRange.length, 0);
-    for (var i = 0; i < yearRange.length; i++) {
-      for (final department in departmentData.keys) {
-        totalEmissions[i] += departmentData[department]![i];
-      }
-    }
 
+    // 生成堆疊棒狀圖資料
     barGroups = List.generate(yearRange.length, (index) {
       double stackBottom = 0;
-      final rods = departmentData.keys.map((department) {
-        final value = departmentData[department]![index];
-        final rod = BarChartRodData(
-          fromY: stackBottom,
-          toY: stackBottom + value,
-          color: _getColorForDepartment(department),
-          width: 8,
+      final rodStackItems = allDepartments.map((department) {
+        final value = widget.selectedDepartments.contains(department)
+            ? departmentData[department]![index]
+            : 0; // 若未勾選，值設為 0
+        final stackItem = BarChartRodStackItem(
+          stackBottom,
+          stackBottom + value, // 堆疊到新高度
+          _getColorForDepartment(department), // 部門顏色
         );
-        stackBottom += value;
-        return rod;
+        stackBottom += value; // 更新堆疊基底
+        return stackItem;
       }).toList();
+
       return BarChartGroupData(
-        x: years[index],
-        barRods: rods,
+        x: index,
+        barRods: [
+          BarChartRodData(
+            toY: stackBottom, // 堆疊的總高度
+            rodStackItems: rodStackItems, // 堆疊項目
+            width: 15, // 柱條寬度
+          ),
+        ],
       );
     });
 
-    trendLine = List.generate(
-      years.length,
-      (index) => FlSpot(years[index].toDouble(), totalEmissions[index]),
+    // 計算調整後的最大值
+    adjustedMaxValue = _adjustMaxValue(
+      barGroups.fold<double>(
+        0,
+        (prev, group) => max(prev, group.barRods[0].toY),
+      ),
     );
+
+    // 在數據加載完成後將滾動條移到最右側
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
 
     setState(() {});
   }
 
+  double _adjustMaxValue(double value) {
+    if (value == 0) return 0;
+
+    if (value < 10) {
+      return value.ceilToDouble(); // 直接返回向上取整的值
+    }
+
+    final int magnitude = pow(10, value.toInt().toString().length - 2).toInt();
+
+    final double roundedValue =
+        (value / magnitude).ceil() * magnitude.toDouble();
+
+    if (roundedValue > value * 1.1) {
+      return (value / magnitude).floor() * magnitude.toDouble();
+    }
+
+    return roundedValue;
+  }
+
   int _getCityIndex(String city) {
     final cities = [
+      "Total",
       "南投縣",
       "台中市",
       "台北市",
@@ -134,7 +195,7 @@ class _CityChartState extends State<CityChart> {
       "雲林縣",
       "高雄市"
     ];
-    return cities.indexOf(city) + 3;
+    return cities.indexOf(city) + 2;
   }
 
   Color _getColorForDepartment(String department) {
@@ -158,54 +219,85 @@ class _CityChartState extends State<CityChart> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: 1000, // 擴大顯示範圍
-        child: Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: barGroups.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : BarChart(
-                    BarChartData(
-                      barGroups: barGroups,
-                      groupsSpace: 20, // 增加年份之間的間隔
-                      titlesData: FlTitlesData(
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, _) => Text(
-                              value.toInt().toString(),
-                              style: const TextStyle(fontSize: 10),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 左側固定的數量級刻度
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(6, (index) {
+            final value = (adjustedMaxValue / 5 * index).toInt();
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
+              child: Text(
+                value.toString(),
+                style: const TextStyle(fontSize: 10),
+              ),
+            );
+          }).reversed.toList(),
+        ),
+        const SizedBox(width: 5),
+        // 柱狀圖部分
+        Expanded(
+          child: SingleChildScrollView(
+            controller: _scrollController, // 添加滾動控制器
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: 1000,
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: barGroups.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.center,
+                            groupsSpace: 20,
+                            barGroups: barGroups,
+                            titlesData: FlTitlesData(
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, _) {
+                                    if (value < 0 || value >= years.length) {
+                                      return const SizedBox();
+                                    }
+                                    return Text(
+                                      years[value.toInt()].toString(),
+                                      style: const TextStyle(fontSize: 10),
+                                    );
+                                  },
+                                ),
+                              ),
+                              leftTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            barTouchData: BarTouchData(enabled: true),
+                            gridData: FlGridData(
+                              show: true,
+                              getDrawingHorizontalLine: (value) => FlLine(
+                                color: Colors.grey.withOpacity(0.2),
+                                strokeWidth: 1,
+                              ),
                             ),
                           ),
                         ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: true),
-                        ),
-                      ),
-                      barTouchData: BarTouchData(enabled: true),
-                      gridData: FlGridData(show: true),
-                      extraLinesData: ExtraLinesData(
-                        horizontalLines: [
-                          HorizontalLine(
-                            y: totalEmissions.isNotEmpty
-                                ? totalEmissions.last
-                                : 0,
-                            color: Colors.black,
-                            strokeWidth: 2,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
