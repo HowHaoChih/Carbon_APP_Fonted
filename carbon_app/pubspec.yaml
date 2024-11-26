@@ -21,6 +21,9 @@ dependencies:
   # iOS 風格的圖標支持
   cupertino_icons: ^1.0.8
 
+  # Scalable Vector Graphics (SVG)
+  flutter_svg: ^2.0.15
+
   # 用於狀態管理
   provider: ^6.1.2
 
@@ -68,6 +71,7 @@ flutter:
     - assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv
     - assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv
     - assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv
+    - assets/icons/
 
 
   # 自定義字體
