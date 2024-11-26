@@ -20,6 +20,7 @@ class CityChart extends StatefulWidget {
 
 class _CityChartState extends State<CityChart> {
   List<BarChartGroupData> barGroups = [];
+  List<FlSpot> lineData = []; // 折線圖數據點
   List<int> years = [];
   Map<String, List<double>> departmentData = {};
   double maxValue = 0; // 用於存儲柱狀圖中的最大值
@@ -106,13 +107,17 @@ class _CityChartState extends State<CityChart> {
 
     years = yearRange;
 
-    // 生成堆疊棒狀圖資料
-    barGroups = List.generate(yearRange.length, (index) {
+    // 生成堆疊棒狀圖資料和折線圖數據
+    barGroups = [];
+    lineData = [];
+    for (var index = 0; index < yearRange.length; index++) {
       double stackBottom = 0;
+      double total = 0;
       final rodStackItems = allDepartments.map((department) {
         final value = widget.selectedDepartments.contains(department)
             ? departmentData[department]![index]
             : 0; // 若未勾選，值設為 0
+        total += value; // 計算當前年份的總值
         final stackItem = BarChartRodStackItem(
           stackBottom,
           stackBottom + value, // 堆疊到新高度
@@ -122,7 +127,8 @@ class _CityChartState extends State<CityChart> {
         return stackItem;
       }).toList();
 
-      return BarChartGroupData(
+      // 添加柱狀圖資料
+      barGroups.add(BarChartGroupData(
         x: index,
         barRods: [
           BarChartRodData(
@@ -131,8 +137,11 @@ class _CityChartState extends State<CityChart> {
             width: 15, // 柱條寬度
           ),
         ],
-      );
-    });
+      ));
+
+      // 添加折線圖數據點
+      lineData.add(FlSpot(index.toDouble(), total));
+    }
 
     // 計算調整後的最大值
     adjustedMaxValue = _adjustMaxValue(
@@ -252,45 +261,71 @@ class _CityChartState extends State<CityChart> {
                   padding: const EdgeInsets.all(16.0),
                   child: barGroups.isEmpty
                       ? const Center(child: CircularProgressIndicator())
-                      : BarChart(
-                          BarChartData(
-                            alignment: BarChartAlignment.center,
-                            groupsSpace: 20,
-                            barGroups: barGroups,
-                            titlesData: FlTitlesData(
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, _) {
-                                    if (value < 0 || value >= years.length) {
-                                      return const SizedBox();
-                                    }
-                                    return Text(
-                                      years[value.toInt()].toString(),
-                                      style: const TextStyle(fontSize: 10),
-                                    );
-                                  },
+                      : Stack(
+                          children: [
+                            BarChart(
+                              BarChartData(
+                                alignment: BarChartAlignment.center,
+                                groupsSpace: 20,
+                                barGroups: barGroups,
+                                titlesData: FlTitlesData(
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (value, _) {
+                                        if (value < 0 ||
+                                            value >= years.length) {
+                                          return const SizedBox();
+                                        }
+                                        return Text(
+                                          years[value.toInt()].toString(),
+                                          style: const TextStyle(fontSize: 10),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  leftTitles: const AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                  topTitles: const AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                  rightTitles: const AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                ),
+                                barTouchData: BarTouchData(enabled: true),
+                                gridData: FlGridData(
+                                  show: true,
+                                  getDrawingHorizontalLine: (value) => FlLine(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    strokeWidth: 1,
+                                  ),
                                 ),
                               ),
-                              leftTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              rightTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
+                            ),
+                            LineChart(
+                              LineChartData(
+                                lineBarsData: [
+                                  LineChartBarData(
+                                    spots: lineData,
+                                    isCurved: true,
+                                    color: Colors.black,
+                                    barWidth: 2,
+                                    belowBarData: BarAreaData(show: false),
+                                  ),
+                                ],
+                                titlesData: FlTitlesData(
+                                  show: false, // 隱藏標題
+                                ),
+                                gridData: FlGridData(show: false),
+                                borderData: FlBorderData(show: false),
+                                minX: -0.75,
+                                maxX: 33.75,
+                                minY: 0,
                               ),
                             ),
-                            barTouchData: BarTouchData(enabled: true),
-                            gridData: FlGridData(
-                              show: true,
-                              getDrawingHorizontalLine: (value) => FlLine(
-                                color: Colors.grey.withOpacity(0.2),
-                                strokeWidth: 1,
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
                 ),
               ),
