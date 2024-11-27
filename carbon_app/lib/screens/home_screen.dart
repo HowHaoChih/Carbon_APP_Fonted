@@ -136,10 +136,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 leading: const Icon(Icons.home),
                 title: const Text('首頁'),
                 onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const HomeScreen(),
-                  ));
-                  // 導航到產業視圖頁面
+                  Navigator.pop(context);
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //   builder: (context) => const HomeScreen(),
+                  // ));
+                  // 導航到首頁
                 },
               ),
               ListTile(
@@ -159,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const CountyIndustryViewScreen(),
                   ));
-                  // 導航到產業視圖頁面
+                  // 導航到縣市產業視圖頁面
                 },
               ),
               ListTile(
@@ -169,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const MapViewScreen(),
                   ));
-                  // 導航到產業視圖頁面
+                  // 導航到地圖視角頁面
                 },
               ),
               const Divider(color: Color.fromARGB(135, 169, 169, 169)),
@@ -180,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const SettingScreen(),
                   ));
-                  // 導航到產業視圖頁面
+                  // 導航到設定頁面
                 },
               ),
             ],
