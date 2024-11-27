@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../widgets/city_chart.dart'; // 引入碳排放圖表的 widget
-import 'home_page.dart';
 import 'industry_page.dart';
 import 'county_industry_page.dart';
 import 'map_page.dart';
+import 'setting_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,66 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       // Scaffold 是 Flutter 提供的基礎頁面框架，包含 appBar、drawer 和 body
       appBar: appBar(), // 自定義的 AppBar
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top,
-              ),
-            ),
-            // 首頁按鈕
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('首頁'),
-              onTap: () {
-                Navigator.pop(context); // 關閉抽屜
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                ); // 導航到首頁
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.factory),
-              title: const Text('產業視圖'),
-              onTap: () {
-                Navigator.pop(context); // 關閉抽屜
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const IndustryViewScreen()),
-                ); // 導航到產業視圖頁面
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.format_list_bulleted),
-              title: const Text('縣市產業視圖'),
-              onTap: () {
-                Navigator.pop(context); // 關閉抽屜
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const CountyIndustryViewScreen()),
-                ); // 導航到縣市產業視圖頁面
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.map),
-              title: const Text('地圖視角'),
-              onTap: () {
-                Navigator.pop(context); // 關閉抽屜
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const MapViewScreen()),
-                ); // 導航到地圖視角頁面
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: sideBar(context),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // 整個頁面內容四周的內邊距
         child: Column(
@@ -173,6 +114,78 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Drawer sideBar(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          Wrap(
+            runSpacing: 16,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top,
+                ),
+              ),
+              // 首頁按鈕
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: const Text('首頁'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const HomeScreen(),
+                  ));
+                  // 導航到產業視圖頁面
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.factory),
+                title: const Text('產業視圖'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const IndustryViewScreen(),
+                  ));
+                  // 導航到產業視圖頁面
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_list_bulleted),
+                title: const Text('縣市產業視圖'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const CountyIndustryViewScreen(),
+                  ));
+                  // 導航到產業視圖頁面
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.map),
+                title: const Text('地圖視角'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const MapViewScreen(),
+                  ));
+                  // 導航到產業視圖頁面
+                },
+              ),
+              const Divider(color: Color.fromARGB(135, 169, 169, 169)),
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text('設定'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const SettingScreen(),
+                  ));
+                  // 導航到產業視圖頁面
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
