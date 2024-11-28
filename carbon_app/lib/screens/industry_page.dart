@@ -40,35 +40,22 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
           const SizedBox(height: 16), // 增加一些間距
           // 產業篩選器
           Wrap(
-            spacing: 8.0, // 水平間距
-            runSpacing: 8.0, // 垂直間距
+            spacing: 8.0,
             children: allDepartments.entries.map((entry) {
-              return SizedBox(
-                width: 120, // 固定每個 FilterChip 的寬度
-                child: FilterChip(
-                  label: Center(
-                    child: Text(entry.value), // 顯示繁體中文名稱
-                  ),
-                  selected: selectedDepartments.contains(entry.key),
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        selectedDepartments = Set.from(selectedDepartments)
-                          ..add(entry.key);
-                      } else {
-                        selectedDepartments = Set.from(selectedDepartments)
-                          ..remove(entry.key);
-                      }
-                    });
-                  },
-                  backgroundColor: Colors.grey[200], // 未選中背景色
-                  selectedColor:
-                      const Color.fromARGB(255, 173, 213, 245), // 選中背景色
-                  labelStyle: const TextStyle(
-                    color: Colors.black, // 文字顏色
-                    fontSize: 14,
-                  ),
-                ),
+              return FilterChip(
+                label: Text(entry.value), // 顯示繁體中文名稱
+                selected: selectedDepartments.contains(entry.key),
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      selectedDepartments = Set.from(selectedDepartments)
+                        ..add(entry.key);
+                    } else {
+                      selectedDepartments = Set.from(selectedDepartments)
+                        ..remove(entry.key);
+                    }
+                  });
+                },
               );
             }).toList(),
           ),

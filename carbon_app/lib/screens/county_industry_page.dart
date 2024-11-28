@@ -123,6 +123,12 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
                           }
                         });
                       },
+                      backgroundColor: Colors.grey[200], // 未選中背景色
+                      selectedColor: Colors.green[100], // 選中背景色
+                      labelStyle: const TextStyle(
+                        color: Colors.black, // 文字顏色
+                        fontSize: 14,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -148,6 +154,12 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
                           }
                         });
                       },
+                      backgroundColor: Colors.grey[200], // 未選中背景色
+                      selectedColor: Colors.green[100], // 選中背景色
+                      labelStyle: const TextStyle(
+                        color: Colors.black, // 文字顏色
+                        fontSize: 14,
+                      ),
                     ),
                   );
                 }).toList(),
