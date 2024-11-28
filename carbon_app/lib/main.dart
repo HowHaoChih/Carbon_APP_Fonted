@@ -12,8 +12,6 @@ class CarbonApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Carbon Emission Tracker',
-      theme: ThemeData(primarySwatch: Colors.green),
       home: const HomeScreen(),
     );
   }

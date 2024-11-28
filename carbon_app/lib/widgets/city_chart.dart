@@ -135,6 +135,7 @@ class _CityChartState extends State<CityChart> {
             toY: stackBottom, // 堆疊的總高度
             rodStackItems: rodStackItems, // 堆疊項目
             width: 15, // 柱條寬度
+            borderRadius: BorderRadius.zero, // 確保柱狀條沒有圓角
           ),
         ],
       ));
@@ -254,7 +255,7 @@ class _CityChartState extends State<CityChart> {
             child: SizedBox(
               width: 1000,
               child: Card(
-                elevation: 4,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: Padding(
