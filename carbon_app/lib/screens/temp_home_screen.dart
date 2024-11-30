@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+// import 'package:flutter_svg/svg.dart';
 import '../widgets/city_chart.dart'; // 引入碳排放圖表的 widget
 import 'industry_page.dart';
 import 'county_industry_page.dart';
@@ -41,9 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 250, 250, 250),
       // Scaffold 是 Flutter 提供的基礎頁面框架，包含 appBar、drawer 和 body
-
+      appBar: appBar(), // 自定義的 AppBar
+      drawer: sideBar(context),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // 整個頁面內容四周的內邊距
         child: Column(
@@ -116,6 +116,114 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Drawer sideBar(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          Wrap(
+            runSpacing: 16,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top,
+                ),
+              ),
+              // 首頁按鈕
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: const Text('首頁'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // 導航到首頁
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.factory),
+                title: const Text('產業視圖'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const IndustryViewScreen(),
+                  ));
+                  // 導航到產業視圖頁面
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_list_bulleted),
+                title: const Text('縣市產業視圖'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const CountyIndustryViewScreen(),
+                  ));
+                  // 導航到縣市產業視圖頁面
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.map),
+                title: const Text('地圖視角'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const MapViewScreen(),
+                  ));
+                  // 導航到地圖視角頁面
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.pie_chart),
+                title: const Text('單年視圖'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const DepartmentPieChartViewScreen(),
+                  ));
+                  // 導航到單年視圖頁面
+                },
+              ),
+              const Divider(color: Color.fromARGB(135, 169, 169, 169)),
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text('設定'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const SettingScreen(),
+                  ));
+                  // 導航到設定頁面
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 自定義的 AppBar
+  AppBar appBar() {
+    return AppBar(
+      title: const Text(
+        "Carbon Emission Tracker", // 應用標題
+        style: TextStyle(
+          color: Colors.black, // 標題文字顏色
+          fontSize: 18, // 字體大小
+          fontWeight: FontWeight.bold, // 粗體
+        ),
+      ),
+      backgroundColor: const Color.fromARGB(255, 250, 250, 250), // AppBar 背景色
+      elevation: 0.0, // 移除陰影
+      centerTitle: true, // 標題置中
+      leading: Builder(
+        builder: (BuildContext context) {
+          return IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black), // 菜單圖標
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // 點擊圖標打開抽屜
+            },
+          );
+        },
+      ),
+      actions: <Widget>[], // AppBar 的其他動作按鈕
     );
   }
 }

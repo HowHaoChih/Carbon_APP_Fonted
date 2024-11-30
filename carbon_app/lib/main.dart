@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/industry_page.dart';
 import 'screens/county_industry_page.dart';
+import 'screens/single_year_page.dart';
 import 'screens/map_page.dart';
 import 'screens/setting_page.dart';
 import 'screens/favorite_screen.dart'; // 收藏頁面
@@ -128,6 +129,16 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const CountyIndustryViewScreen(),
                   ));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.pie_chart),
+                title: const Text('單年視圖'),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const DepartmentPieChartViewScreen(),
+                  ));
+                  // 導航到單年視圖頁面
                 },
               ),
               ListTile(
