@@ -1,8 +1,5 @@
 // bottom_navigation_bar.dart
 import 'package:flutter/material.dart';
-import '../screens/industry_page.dart';
-import '../screens/county_industry_page.dart';
-import '../screens/map_page.dart';
 import '../screens/setting_page.dart';
 import '../screens/favorite_screen.dart'; // 收藏頁面
 import '../screens/home_screen.dart'; // 首頁內容

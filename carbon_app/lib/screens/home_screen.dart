@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+// import 'package:flutter_svg/svg.dart';
 import '../widgets/city_chart.dart'; // 引入碳排放圖表的 widget
-import 'industry_page.dart';
-import 'county_industry_page.dart';
-import 'map_page.dart';
-import 'setting_page.dart';
-import 'single_year_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
