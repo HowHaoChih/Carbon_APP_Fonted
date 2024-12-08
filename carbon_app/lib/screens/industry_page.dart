@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/city_chart.dart'; // 引入城市碳排放圖表的 widget
+import '../widgets/stacked_bar_and_line_chart.dart'; // 引入城市碳排放圖表的 widget
 
 class IndustryViewScreen extends StatefulWidget {
   const IndustryViewScreen({super.key});
@@ -142,7 +142,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
               children: [
                 const SizedBox(width: 16), // 左側新增 16 像素的空白
                 Expanded(
-                  child: CityChart(
+                  child: StackedBarAndLineChart(
                     city: "Total", // 顯示全國數據
                     selectedDepartments: selectedDepartments,
                   ),

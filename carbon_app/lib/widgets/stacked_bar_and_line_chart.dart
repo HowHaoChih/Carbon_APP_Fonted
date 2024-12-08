@@ -4,21 +4,21 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:math';
 
-class CityChart extends StatefulWidget {
+class StackedBarAndLineChart extends StatefulWidget {
   final String city; // 城市名稱
   final Set<String> selectedDepartments; // 傳入的選中產業
 
-  const CityChart({
+  const StackedBarAndLineChart({
     required this.city,
     required this.selectedDepartments,
     super.key,
   });
 
   @override
-  State<CityChart> createState() => _CityChartState();
+  State<StackedBarAndLineChart> createState() => _StackedBarAndLineChartState();
 }
 
-class _CityChartState extends State<CityChart> {
+class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
   List<BarChartGroupData> barGroups = [];
   List<FlSpot> lineData = []; // 折線圖數據點
   List<int> years = [];
@@ -44,7 +44,7 @@ class _CityChartState extends State<CityChart> {
   }
 
   @override
-  void didUpdateWidget(CityChart oldWidget) {
+  void didUpdateWidget(StackedBarAndLineChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     // 檢查城市或選中產業集合是否發生變化
     if (oldWidget.city != widget.city ||
@@ -333,10 +333,6 @@ class _CityChartState extends State<CityChart> {
             ),
           ),
         ),
-        // const SizedBox(height: 16), // 增加空隙
-        // DepartmentLegend(
-        //   departmentList: widget.selectedDepartments.toList(),
-        // ),
       ],
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/city_chart.dart'; // 引入碳排放圖表的 widget
+import '../widgets/stacked_bar_and_line_chart.dart'; // 引入碳排放圖表的 widget
 import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
 
 class HomeScreen extends StatefulWidget {
@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // 全國碳排放趨勢圖表
             Expanded(
               flex: 2, // 占用父容器 2 倍的空間
-              child: CityChart(
+              child: StackedBarAndLineChart(
                 city: "Total",
                 selectedDepartments: allDepartments.toSet(),
               ), // 顯示全國碳排放趨勢的自定義 widget
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // 城市碳排放趨勢圖表
             Expanded(
               flex: 2, // 占用父容器 2 倍的空間
-              child: CityChart(
+              child: StackedBarAndLineChart(
                 city: selectedCity,
                 selectedDepartments: allDepartments.toSet(),
               ), // 顯示選中城市的碳排放數據
