@@ -59,6 +59,25 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
     "Electricity"
   };
 
+  Color _getColorForDepartment(String department) {
+    switch (department) {
+      case "Residential":
+        return Colors.orange;
+      case "Services":
+        return Colors.blue;
+      case "Energy":
+        return Colors.green;
+      case "Manufacturing":
+        return Colors.purple;
+      case "Transportation":
+        return Colors.red;
+      case "Electricity":
+        return Colors.yellow;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // 將產業列表分為 2 行
@@ -97,6 +116,7 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
                 labelText: "選擇縣市",
                 border: OutlineInputBorder(),
               ),
+              menuMaxHeight: 400, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
@@ -123,8 +143,10 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
                           }
                         });
                       },
-                      backgroundColor: Colors.grey[200], // 未選中背景色
-                      selectedColor: Colors.green[100], // 選中背景色
+                      backgroundColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.3), // 未選中背景色對應產業顏色
+                      selectedColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.6), // 選中背景色對應產業顏色
                       labelStyle: const TextStyle(
                         color: Colors.black, // 文字顏色
                         fontSize: 14,
@@ -154,8 +176,10 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
                           }
                         });
                       },
-                      backgroundColor: Colors.grey[200], // 未選中背景色
-                      selectedColor: Colors.green[100], // 選中背景色
+                      backgroundColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.3), // 未選中背景色對應產業顏色
+                      selectedColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.6), // 選中背景色對應產業顏色
                       labelStyle: const TextStyle(
                         color: Colors.black, // 文字顏色
                         fontSize: 14,

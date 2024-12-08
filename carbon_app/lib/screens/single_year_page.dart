@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/department_pie_chart.dart'; // 引入圓餅圖 widget
+import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
 
 class DepartmentPieChartViewScreen extends StatefulWidget {
   const DepartmentPieChartViewScreen({super.key});
@@ -41,10 +42,20 @@ class _DepartmentPieChartViewScreenState
   // 選中的城市
   String selectedCity = "台北市";
   // 年份列表
-  final List<int> years = List<int>.generate(2024 - 1990 + 1, (i) => 1990 + i);
+  final List<int> years = List<int>.generate(2023 - 1990 + 1, (i) => 1990 + i);
 
   // 選中的年份
   int selectedYear = 2023;
+
+  // 所有產業選項
+  final List<String> allDepartments = [
+    "Residential",
+    "Services",
+    "Energy",
+    "Manufacturing",
+    "Transportation",
+    "Electricity"
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +88,7 @@ class _DepartmentPieChartViewScreenState
                 labelText: "選擇城市",
                 border: OutlineInputBorder(),
               ),
+              menuMaxHeight: 600, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
@@ -102,18 +114,39 @@ class _DepartmentPieChartViewScreenState
                 labelText: "選擇年份",
                 border: OutlineInputBorder(),
               ),
+              menuMaxHeight: 600, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
           // 圖表展示
           SizedBox(
             height:
-                MediaQuery.of(context).size.height * 0.5, // 將圖表高度設置為屏幕高度的 50%
+                MediaQuery.of(context).size.height * 0.45, // 整個容器高度為屏幕高度的 50%
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: DepartmentPieChart(
-                year: selectedYear,
-                city: selectedCity == "全國" ? "Total" : selectedCity, // 傳入選中的年份
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 3, // PieChart 占用更多空間
+                    child: DepartmentPieChart(
+                      year: selectedYear,
+                      city: selectedCity == "全國"
+                          ? "Total"
+                          : selectedCity, // 傳入選中的年份
+                    ),
+                  ),
+                  const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
+                  Container(
+                    margin:
+                        const EdgeInsets.only(left: 16.0, right: 8.0), // 左右邊距
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8, // 限制寬度
+                    ),
+                    child: DepartmentLegend(
+                      departmentList: allDepartments,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

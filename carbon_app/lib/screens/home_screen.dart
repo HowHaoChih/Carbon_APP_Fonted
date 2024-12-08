@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/svg.dart';
 import '../widgets/city_chart.dart'; // 引入碳排放圖表的 widget
+import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,22 +23,10 @@ class _HomeScreenState extends State<HomeScreen> {
     "Electricity"
   ];
 
-  // 初始選中的產業
-  Set<String> selectedDepartments = {
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  };
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 250, 250, 250),
-      // Scaffold 是 Flutter 提供的基礎頁面框架，包含 appBar、drawer 和 body
-
       body: Padding(
         padding: const EdgeInsets.all(16.0), // 整個頁面內容四周的內邊距
         child: Column(
@@ -48,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
               flex: 2, // 占用父容器 2 倍的空間
               child: CityChart(
                 city: "Total",
-                selectedDepartments: selectedDepartments,
+                selectedDepartments: allDepartments.toSet(),
               ), // 顯示全國碳排放趨勢的自定義 widget
             ),
             const SizedBox(height: 16), // 垂直間距
@@ -102,10 +90,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: CityChart(
                       city: selectedCity,
-                      selectedDepartments: selectedDepartments,
+                      selectedDepartments: allDepartments.toSet(),
                     ), // 顯示選中城市的碳排放數據
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16), // 添加額外間距
+            // 部門圖例
+            Container(
+              margin:
+                  const EdgeInsets.only(left: 16.0, right: 8.0), // 左 32，右 16
+              constraints: BoxConstraints(
+                maxWidth:
+                    MediaQuery.of(context).size.width * 0.8, // 最大寬度為螢幕 80%
+              ),
+              child: DepartmentLegend(
+                departmentList: allDepartments,
               ),
             ),
           ],

@@ -5,7 +5,7 @@ import 'dart:convert';
 
 class DepartmentPieChart extends StatefulWidget {
   final int year;
-  final String city; // 選定的年份
+  final String city;
 
   const DepartmentPieChart({
     required this.year,
@@ -140,21 +140,31 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: departmentData.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : PieChart(
-                PieChartData(
-                  sections: _getSections(),
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 40,
-                  borderData: FlBorderData(show: false),
-                ),
-              ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Card(
+            elevation: 4,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: departmentData.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : AspectRatio(
+                      aspectRatio: 1.2,
+                      child: PieChart(
+                        PieChartData(
+                          sections: _getSections(),
+                          sectionsSpace: 1,
+                          centerSpaceRadius: 30,
+                          borderData: FlBorderData(show: false),
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -162,14 +172,14 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
   List<PieChartSectionData> _getSections() {
     return departmentData.entries.map((entry) {
       final departmentKey = entry.key;
-      final department = _getDepartmentName(departmentKey);
+      // final department = _getDepartmentName(departmentKey);
       final value = entry.value;
       final color = _getColorForDepartment(departmentKey);
       return PieChartSectionData(
         color: color,
         value: value,
         title: '${value.toStringAsFixed(1)}%',
-        radius: 50,
+        radius: 90,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,

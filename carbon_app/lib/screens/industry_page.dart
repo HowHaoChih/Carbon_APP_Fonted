@@ -29,8 +29,33 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
     "Electricity"
   };
 
+  Color _getColorForDepartment(String department) {
+    switch (department) {
+      case "Residential":
+        return Colors.orange;
+      case "Services":
+        return Colors.blue;
+      case "Energy":
+        return Colors.green;
+      case "Manufacturing":
+        return Colors.purple;
+      case "Transportation":
+        return Colors.red;
+      case "Electricity":
+        return Colors.yellow;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 將產業列表分為 2 行
+    final departmentList = allDepartments.entries.toList();
+    final firstRow =
+        departmentList.sublist(0, (departmentList.length / 2).ceil());
+    final secondRow =
+        departmentList.sublist((departmentList.length / 2).ceil());
     return Scaffold(
       appBar: AppBar(
         title: const Text('產業視圖'),
@@ -39,25 +64,74 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
         children: [
           const SizedBox(height: 16), // 增加一些間距
           // 產業篩選器
-          Wrap(
-            spacing: 8.0,
-            children: allDepartments.entries.map((entry) {
-              return FilterChip(
-                label: Text(entry.value), // 顯示繁體中文名稱
-                selected: selectedDepartments.contains(entry.key),
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      selectedDepartments = Set.from(selectedDepartments)
-                        ..add(entry.key);
-                    } else {
-                      selectedDepartments = Set.from(selectedDepartments)
-                        ..remove(entry.key);
-                    }
-                  });
-                },
-              );
-            }).toList(),
+          Column(
+            children: [
+              // 第一行
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: firstRow.map((entry) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: FilterChip(
+                      label: Text(entry.value), // 顯示繁體中文名稱
+                      selected: selectedDepartments.contains(entry.key),
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..add(entry.key);
+                          } else {
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..remove(entry.key);
+                          }
+                        });
+                      },
+                      backgroundColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.3), // 未選中背景色對應產業顏色
+                      selectedColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.6), // 選中背景色對應產業顏色
+                      labelStyle: const TextStyle(
+                        color: Colors.black, // 文字顏色
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 8), // 行間距
+              // 第二行
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: secondRow.map((entry) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: FilterChip(
+                      label: Text(entry.value), // 顯示繁體中文名稱
+                      selected: selectedDepartments.contains(entry.key),
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..add(entry.key);
+                          } else {
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..remove(entry.key);
+                          }
+                        });
+                      },
+                      backgroundColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.3), // 未選中背景色對應產業顏色
+                      selectedColor: _getColorForDepartment(entry.key)
+                          .withOpacity(0.6), // 選中背景色對應產業顏色
+                      labelStyle: const TextStyle(
+                        color: Colors.black, // 文字顏色
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
           const SizedBox(height: 16), // 增加一些間距
           // 圖表展示

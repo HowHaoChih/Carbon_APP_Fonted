@@ -333,6 +333,10 @@ class _CityChartState extends State<CityChart> {
             ),
           ),
         ),
+        // const SizedBox(height: 16), // 增加空隙
+        // DepartmentLegend(
+        //   departmentList: widget.selectedDepartments.toList(),
+        // ),
       ],
     );
   }
