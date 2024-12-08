@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'screens/industry_page.dart';
 import 'screens/county_industry_page.dart';
 import 'screens/single_year_page.dart';
 import 'screens/map_page.dart';
 import 'screens/settings_page.dart';
-import 'screens/favorite_page.dart'; // 收藏頁面
-import 'screens/infomation.dart'; // 有關頁面
-import 'screens/home_screen.dart'; // 首頁內容
-import 'bottom_navigation_bar.dart'; // 引入自定義的 BottomNavigationBar
+import 'screens/favorite_page.dart';
+import 'screens/infomation.dart';
+import 'screens/home_screen.dart';
+import 'bottom_navigation_bar.dart';
+import 'app_state.dart'; // 引入AppState
 
 void main() {
-  runApp(const CarbonApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AppState(),
+      child: const CarbonApp(),
+    ),
+  );
 }
 
 class CarbonApp extends StatelessWidget {
@@ -18,11 +26,26 @@ class CarbonApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      //title: 'Carbon Emission Tracker',
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: const MainScreen(), // 將主頁設置為 MainScreen
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: appState.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+          locale: appState.locale,
+          supportedLocales: const [
+            Locale('en', 'US'),
+            Locale('zh', 'TW'),
+          ],
+          localizationsDelegates: const [
+            ...GlobalMaterialLocalizations
+                .delegates, // Spread the delegates list here
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations
+                .delegate, // Add this to support Cupertino localization
+          ],
+          home: const MainScreen(),
+        );
+      },
     );
   }
 }
@@ -35,13 +58,20 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0; // 當前選中的頁面索引
+  int _currentIndex = 0;
 
   // 子頁面列表
   final List<Widget> _screens = [
-    const HomeScreen(), // 首頁
-    const FavoriteScreen(), // 收藏頁
-    const SettingsScreen(), // 設定頁
+    const HomeScreen(),
+    const FavoriteScreen(),
+    const SettingsScreen(),
+  ];
+
+  // 每個頁面對應的標題
+  final List<String> _titles = [
+    '程式碳排總覽',
+    '我的最愛',
+    '設定',
   ];
 
   // 切換頁面
@@ -53,36 +83,39 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar(), // 使用自定義的 AppBar
-      drawer: sideBar(context), // 使用自定義的 Drawer
-      body: _screens[_currentIndex], // 根據當前索引顯示對應頁面
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex, // 傳遞當前選中的索引
-        onTabTapped: _onTabTapped, // 傳遞切換頁面的邏輯
-      ),
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        return Scaffold(
+          appBar: appBar(appState), // 使用自定義的 AppBar
+          drawer: sideBar(context), // 使用自定義的 Drawer
+          body: _screens[_currentIndex], // 根據當前索引顯示對應頁面
+          bottomNavigationBar: CustomBottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTabTapped: _onTabTapped,
+          ),
+        );
+      },
     );
   }
 
-  AppBar appBar() {
+  AppBar appBar(AppState appState) {
     return AppBar(
-      title: const Text(
-        "Carbon Emission Tracker", // 應用標題
-        style: TextStyle(
-          color: Colors.black, // 標題文字顏色
-          fontSize: 18, // 字體大小
-          fontWeight: FontWeight.bold, // 粗體
+      title: Text(
+        _titles[_currentIndex], // 根據當前索引顯示對應的標題
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
       ),
-      backgroundColor: const Color.fromARGB(255, 250, 250, 250), // AppBar 背景色
-      elevation: 0.0, // 移除陰影
-      centerTitle: true, // 標題置中
+      //backgroundColor: appState.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 250, 250, 250),
+      elevation: 0.0,
+      centerTitle: true,
       leading: Builder(
         builder: (BuildContext context) {
           return IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black), // 菜單圖標
+            icon: const Icon(Icons.menu),
             onPressed: () {
-              Scaffold.of(context).openDrawer(); // 點擊圖標打開抽屜
+              Scaffold.of(context).openDrawer();
             },
           );
         },
@@ -109,9 +142,9 @@ class _MainScreenState extends State<MainScreen> {
                 title: const Text('首頁'),
                 onTap: () {
                   setState(() {
-                    _currentIndex = 0; // 切換到首頁
+                    _currentIndex = 0;
                   });
-                  Navigator.pop(context); // 關閉 Drawer
+                  Navigator.pop(context);
                 },
               ),
               ListTile(
@@ -139,7 +172,6 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const DepartmentPieChartViewScreen(),
                   ));
-                  // 導航到單年視圖頁面
                 },
               ),
               ListTile(
