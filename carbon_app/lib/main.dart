@@ -69,7 +69,7 @@ class _MainScreenState extends State<MainScreen> {
 
   // 每個頁面對應的標題
   final List<String> _titles = [
-    '程式碳排總覽',
+    '城市碳排總覽',
     '我的最愛',
     '設定',
   ];
