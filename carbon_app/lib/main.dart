@@ -3,8 +3,9 @@ import 'screens/industry_page.dart';
 import 'screens/county_industry_page.dart';
 import 'screens/single_year_page.dart';
 import 'screens/map_page.dart';
-import 'screens/setting_page.dart';
-import 'screens/favorite_screen.dart'; // 收藏頁面
+import 'screens/settings_page.dart';
+import 'screens/favorite_page.dart'; // 收藏頁面
+import 'screens/infomation.dart'; // 有關頁面
 import 'screens/home_screen.dart'; // 首頁內容
 import 'bottom_navigation_bar.dart'; // 引入自定義的 BottomNavigationBar
 
@@ -19,7 +20,7 @@ class CarbonApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Carbon Emission Tracker',
+      //title: 'Carbon Emission Tracker',
       theme: ThemeData(primarySwatch: Colors.green),
       home: const MainScreen(), // 將主頁設置為 MainScreen
     );
@@ -40,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomeScreen(), // 首頁
     const FavoriteScreen(), // 收藏頁
-    const SettingScreen(), // 設定頁
+    const SettingsScreen(), // 設定頁
   ];
 
   // 切換頁面
@@ -155,10 +156,9 @@ class _MainScreenState extends State<MainScreen> {
                 leading: const Icon(Icons.info),
                 title: const Text('有關'),
                 onTap: () {
-                  setState(() {
-                    _currentIndex = 2; // 切換到設定頁
-                  });
-                  Navigator.pop(context); // 關閉 Drawer
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const InfomationScreen(),
+                  ));
                 },
               ),
             ],
