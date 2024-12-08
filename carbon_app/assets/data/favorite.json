@@ -1,0 +1,19 @@
+{
+  "favorite": [
+    {
+      "縣市": "Taipei",
+      "產業": [
+        "Electricity",
+        "Transportation"
+      ]
+    },
+    {
+      "縣市": "Taichung",
+      "產業": [
+        "ServiceIndustry",
+        "Manufacturing",
+        "ResidentialSector"
+      ]
+    }
+  ]
+}

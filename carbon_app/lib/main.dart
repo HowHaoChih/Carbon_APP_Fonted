@@ -8,6 +8,7 @@ import 'screens/favorite_screen.dart'; // 收藏頁面
 import 'screens/home_screen.dart'; // 首頁內容
 import 'bottom_navigation_bar.dart'; // 引入自定義的 BottomNavigationBar
 
+
 void main() {
   runApp(const CarbonApp());
 }

@@ -72,6 +72,7 @@ flutter:
     - assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv
     - assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv
     - assets/icons/
+    - assets/data/favorite.json
 
 
   # 自定義字體
