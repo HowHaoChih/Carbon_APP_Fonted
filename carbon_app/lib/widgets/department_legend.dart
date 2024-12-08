@@ -5,8 +5,8 @@ class DepartmentLegend extends StatelessWidget {
 
   const DepartmentLegend({
     required this.departmentList,
-    Key? key,
-  }) : super(key: key);
+    super.key, // 使用 super 的簡化參數形式
+  });
 
   String _getDepartmentName(String key) {
     switch (key) {

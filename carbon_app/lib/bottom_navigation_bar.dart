@@ -1,27 +1,19 @@
 // bottom_navigation_bar.dart
 import 'package:flutter/material.dart';
-import '../screens/setting_page.dart';
-import '../screens/favorite_screen.dart'; // 收藏頁面
-import '../screens/home_screen.dart'; // 首頁內容
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTabTapped;
 
   const CustomBottomNavigationBar({
-    Key? key,
     required this.currentIndex,
     required this.onTabTapped,
-  }) : super(key: key);
+    super.key, // 使用 super.key 的簡化語法
+  });
 
   @override
   Widget build(BuildContext context) {
     // 子頁面列表
-    final List<Widget> _screens = [
-      const HomeScreen(), // 首頁
-      const FavoriteScreen(), // 收藏頁
-      const SettingScreen(), // 設定頁
-    ];
     return BottomNavigationBar(
       currentIndex: currentIndex, // 當前選中的索引
       onTap: onTabTapped, // 點擊切換頁面

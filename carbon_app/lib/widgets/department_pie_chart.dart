@@ -47,25 +47,6 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     return cities.indexOf(city) + 2;
   }
 
-  String _getDepartmentName(String key) {
-    switch (key) {
-      case "Residential":
-        return "住宅部門";
-      case "Services":
-        return "服務業";
-      case "Energy":
-        return "能源部門";
-      case "Manufacturing":
-        return "製造業";
-      case "Transportation":
-        return "運輸業";
-      case "Electricity":
-        return "電力部門";
-      default:
-        return key;
-    }
-  }
-
   Map<String, double> departmentData = {};
 
   final List<String> allDepartments = [
