@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 250, 250, 250),
+      // backgroundColor: const Color.fromARGB(255, 250, 250, 250),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // 整個頁面內容四周的內邊距
         child: Column(
