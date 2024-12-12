@@ -90,6 +90,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     };
 
     departmentData = {};
+    double totalDepartmentValue = 0;
 
     // 解析每個部門的資料
     for (final department in allDepartments) {
@@ -103,10 +104,15 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
           final value = double.parse(row[cityIndex]); // 根據選定的城市取值
           if (year == widget.year) {
             departmentData[department] = value;
+            totalDepartmentValue += value;
             break;
           }
         }
       }
+    }
+    for (final department in allDepartments) {
+      final value = departmentData[department]!;
+      departmentData[department] = value / totalDepartmentValue * 100;
     }
     setState(() {});
   }
@@ -164,7 +170,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: Color.fromARGB(255, 28, 28, 28),
         ),
       );
     }).toList();

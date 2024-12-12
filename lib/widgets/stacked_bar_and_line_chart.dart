@@ -23,7 +23,6 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
   List<FlSpot> lineData = []; // 折線圖數據點
   List<int> years = [];
   Map<String, List<double>> departmentData = {};
-  double maxValue = 0; // 用於存儲柱狀圖中的最大值
   double adjustedMaxValue = 0; // 調整後的最大值（取整）
 
   final List<String> allDepartments = [
@@ -86,7 +85,6 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
     final yearRange = List<int>.generate(2024 - 1990, (i) => 1990 + i);
 
     departmentData = {};
-    maxValue = 0; // 初始化最大值
 
     // 解析每個部門的資料
     for (final department in allDepartments) {
