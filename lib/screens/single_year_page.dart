@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/department_pie_chart.dart'; // 引入圓餅圖 widget
 import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
+import '../utils/department_utils.dart'; // 引入 department_utils.dart
+import '../utils/city_utils.dart';
 
 class DepartmentPieChartViewScreen extends StatefulWidget {
   const DepartmentPieChartViewScreen({super.key});
@@ -13,31 +15,7 @@ class DepartmentPieChartViewScreen extends StatefulWidget {
 class _DepartmentPieChartViewScreenState
     extends State<DepartmentPieChartViewScreen> {
   // 縣市列表
-  final List<String> cities = [
-    "全國",
-    "南投縣",
-    "台中市",
-    "台北市",
-    "台南市",
-    "台東縣",
-    "嘉義市",
-    "嘉義縣",
-    "基隆市",
-    "宜蘭縣",
-    "屏東縣",
-    "彰化縣",
-    "新北市",
-    "新竹市",
-    "新竹縣",
-    "桃園市",
-    "澎湖縣",
-    "花蓮縣",
-    "苗栗縣",
-    "連江縣",
-    "金門縣",
-    "雲林縣",
-    "高雄市"
-  ];
+  final List<String> cities = CityUtils.getCountiesWithNation();
 
   // 選中的城市
   String selectedCity = "台北市";
@@ -48,14 +26,7 @@ class _DepartmentPieChartViewScreenState
   int selectedYear = 2023;
 
   // 所有產業選項
-  final List<String> allDepartments = [
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  ];
+  final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
   Widget build(BuildContext context) {
@@ -126,9 +97,8 @@ class _DepartmentPieChartViewScreenState
             child: Column(
               children: [
                 DepartmentPieChart(
-                  year: selectedYear,
-                  city:
-                      selectedCity == "全國" ? "Total" : selectedCity, // 傳入選中的年份
+                  year: selectedYear, // 傳入選中的年份
+                  city: selectedCity == "全國" ? "Total" : selectedCity,
                 ),
                 const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
                 Container(

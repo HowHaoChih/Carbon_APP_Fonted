@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
+import '../utils/department_utils.dart';
+import '../utils/city_utils.dart';
 import 'dart:convert';
 
 class DepartmentPieChart extends StatefulWidget {
@@ -18,45 +20,9 @@ class DepartmentPieChart extends StatefulWidget {
 }
 
 class _DepartmentPieChartState extends State<DepartmentPieChart> {
-  int _getCityIndex(String city) {
-    final cities = [
-      "Total",
-      "南投縣",
-      "台中市",
-      "台北市",
-      "台南市",
-      "台東縣",
-      "嘉義市",
-      "嘉義縣",
-      "基隆市",
-      "宜蘭縣",
-      "屏東縣",
-      "彰化縣",
-      "新北市",
-      "新竹市",
-      "新竹縣",
-      "桃園市",
-      "澎湖縣",
-      "花蓮縣",
-      "苗栗縣",
-      "連江縣",
-      "金門縣",
-      "雲林縣",
-      "高雄市"
-    ];
-    return cities.indexOf(city) + 2;
-  }
-
   Map<String, double> departmentData = {};
 
-  final List<String> allDepartments = [
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  ];
+  final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
   void initState() {
@@ -100,7 +66,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         for (var i = 1; i < rows.length; i++) {
           final row = rows[i].split(',');
           final year = int.parse(row[0]);
-          final cityIndex = _getCityIndex(widget.city);
+          final cityIndex = CityUtils.getCityIndex(widget.city);
           final value = double.parse(row[cityIndex]); // 根據選定的城市取值
           if (year == widget.year) {
             departmentData[department] = value;
@@ -174,7 +140,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     return departmentData.entries.map((entry) {
       final departmentKey = entry.key;
       final value = entry.value;
-      final color = _getColorForDepartment(departmentKey);
+      final color = DepartmentUtils.getDepartmentColor(departmentKey);
       return PieChartSectionData(
         color: color,
         value: value,
@@ -187,24 +153,5 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         ),
       );
     }).toList();
-  }
-
-  Color _getColorForDepartment(String department) {
-    switch (department) {
-      case "Residential":
-        return Colors.orange;
-      case "Services":
-        return Colors.blue;
-      case "Energy":
-        return Colors.green;
-      case "Manufacturing":
-        return Colors.purple;
-      case "Transportation":
-        return Colors.red;
-      case "Electricity":
-        return Colors.yellow;
-      default:
-        return Colors.grey;
-    }
   }
 }

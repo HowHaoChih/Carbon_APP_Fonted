@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/stacked_bar_and_line_chart.dart'; // 引入碳排放圖表的 widget
 import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
+import '../utils/department_utils.dart';
+import '../utils/city_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,14 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCity = "台北市";
 
   // 所有產業選項
-  final List<String> allDepartments = [
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  ];
+  final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
   Widget build(BuildContext context) {
@@ -52,31 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: DropdownButton<String>(
                 value: selectedCity, // 當前選中的城市
-                items: const [
-                  // 縣市選項列表
-                  "南投縣",
-                  "台中市",
-                  "台北市",
-                  "台南市",
-                  "台東縣",
-                  "嘉義市",
-                  "嘉義縣",
-                  "基隆市",
-                  "宜蘭縣",
-                  "屏東縣",
-                  "彰化縣",
-                  "新北市",
-                  "新竹市",
-                  "新竹縣",
-                  "桃園市",
-                  "澎湖縣",
-                  "花蓮縣",
-                  "苗栗縣",
-                  "連江縣",
-                  "金門縣",
-                  "雲林縣",
-                  "高雄市"
-                ].map((String city) {
+                items: CityUtils.getCountyList().map((String city) {
                   // 將每個城市名稱轉為 DropdownMenuItem
                   return DropdownMenuItem<String>(
                     value: city, // 城市名稱

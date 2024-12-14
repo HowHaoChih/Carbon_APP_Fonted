@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'screens/industry_page.dart';
-import 'screens/county_industry_page.dart';
 import 'screens/single_year_page.dart';
 import 'screens/map_page.dart';
 import 'screens/settings_page.dart';
@@ -107,7 +106,6 @@ class _MainScreenState extends State<MainScreen> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      //backgroundColor: appState.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 250, 250, 250),
       elevation: 0.0,
       centerTitle: true,
       leading: Builder(
@@ -153,15 +151,6 @@ class _MainScreenState extends State<MainScreen> {
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const IndustryViewScreen(),
-                  ));
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.format_list_bulleted),
-                title: const Text('縣市產業視圖'),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const CountyIndustryViewScreen(),
                   ));
                 },
               ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
+import '../utils/department_utils.dart';
+import '../utils/city_utils.dart';
 import 'dart:convert';
 import 'dart:math';
 
@@ -25,14 +27,8 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
   Map<String, List<double>> departmentData = {};
   double adjustedMaxValue = 0; // 調整後的最大值（取整）
 
-  final List<String> allDepartments = [
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  ]; // 固定產業順序
+  final List<String> allDepartments =
+      DepartmentUtils.getAllDepartments(); // 固定產業順序
 
   final ScrollController _scrollController = ScrollController();
 
@@ -72,7 +68,7 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
     final electricityData = await rootBundle
         .loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
 
-    final cityIndex = _getCityIndex(widget.city);
+    final cityIndex = CityUtils.getCityIndex(widget.city);
     final allDataFiles = {
       "Residential": residentialData,
       "Services": servicesData,
@@ -116,10 +112,14 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
             ? departmentData[department]![index]
             : 0; // 若未勾選，值設為 0
         total += value; // 計算當前年份的總值
+
+        // 使用靜態方法獲取顏色
+        final color = DepartmentUtils.getDepartmentColor(department);
+
         final stackItem = BarChartRodStackItem(
           stackBottom,
           stackBottom + value, // 堆疊到新高度
-          _getColorForDepartment(department), // 部門顏色
+          color, // 部門顏色
         );
         stackBottom += value; // 更新堆疊基底
         return stackItem;
@@ -177,78 +177,34 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
     return roundedValue;
   }
 
-  int _getCityIndex(String city) {
-    final cities = [
-      "Total",
-      "南投縣",
-      "台中市",
-      "台北市",
-      "台南市",
-      "台東縣",
-      "嘉義市",
-      "嘉義縣",
-      "基隆市",
-      "宜蘭縣",
-      "屏東縣",
-      "彰化縣",
-      "新北市",
-      "新竹市",
-      "新竹縣",
-      "桃園市",
-      "澎湖縣",
-      "花蓮縣",
-      "苗栗縣",
-      "連江縣",
-      "金門縣",
-      "雲林縣",
-      "高雄市"
-    ];
-    return cities.indexOf(city) + 2;
-  }
-
-  Color _getColorForDepartment(String department) {
-    switch (department) {
-      case "Residential":
-        return Colors.orange;
-      case "Services":
-        return Colors.blue;
-      case "Energy":
-        return Colors.green;
-      case "Manufacturing":
-        return Colors.purple;
-      case "Transportation":
-        return Colors.red;
-      case "Electricity":
-        return Colors.yellow;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final bool isWideScreen = size.width > 600; // 判斷是否為寬螢幕
 
     return Center(
-      child: Container(
+      child: SizedBox(
         width: isWideScreen ? size.width * 0.8 : null, // 寬螢幕時限制寬度
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 左側固定的數量級刻度
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(6, (index) {
-                final value = (adjustedMaxValue / 5 * index).toInt();
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: Text(
-                    value.toString(),
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                );
-              }).reversed.toList(),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 22.0), // 提高底部位置
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround, // 刻度間隙更均勻
+                children: List.generate(6, (index) {
+                  final value = (adjustedMaxValue / 5 * index).toInt();
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 3.0), // 減小刻度之間的間距
+                    child: Text(
+                      value.toString(),
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }).reversed.toList(),
+              ),
             ),
             const SizedBox(width: 5),
             // 柱狀圖部分
@@ -260,6 +216,8 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
                   width: 1000, // 每組柱狀圖固定寬度
                   child: Card(
                     elevation: 0,
+                    color: Theme.of(context)
+                        .scaffoldBackgroundColor, // 設置 Card 的背景顏色
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -313,6 +271,8 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
                                         strokeWidth: 1,
                                       ),
                                     ),
+                                    // backgroundColor: Theme.of(context)
+                                    //     .scaffoldBackgroundColor, // 設置背景顏色
                                   ),
                                 ),
                                 LineChart(
@@ -321,7 +281,10 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
                                       LineChartBarData(
                                         spots: lineData,
                                         isCurved: true,
-                                        color: Colors.black,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.grey // 在黑暗模式中顯示灰色
+                                            : Colors.black, // 在亮模式中顯示黑色
                                         barWidth: 2,
                                         belowBarData: BarAreaData(show: false),
                                       ),
