@@ -39,9 +39,9 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
   // 產業列表（英文對應繁體中文）
   final Map<String, String> allDepartments = {
     "Residential": "住宅部門",
-    "Services": "服務業",
+    "Services": "服務業　",
     "Energy": "能源部門",
-    "Manufacturing": "製造業",
+    "Manufacturing": "製造業　",
     "Transportation": "交通運輸",
     "Electricity": "電力部門"
   };

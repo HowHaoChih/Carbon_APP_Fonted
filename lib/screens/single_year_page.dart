@@ -88,7 +88,8 @@ class _DepartmentPieChartViewScreenState
                 labelText: "選擇城市",
                 border: OutlineInputBorder(),
               ),
-              menuMaxHeight: 600, // 設置最大展開高度
+              menuMaxHeight:
+                  MediaQuery.of(context).size.height * 0.5, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
@@ -114,40 +115,32 @@ class _DepartmentPieChartViewScreenState
                 labelText: "選擇年份",
                 border: OutlineInputBorder(),
               ),
-              menuMaxHeight: 600, // 設置最大展開高度
+              menuMaxHeight:
+                  MediaQuery.of(context).size.height * 0.5, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
           // 圖表展示
-          SizedBox(
-            height:
-                MediaQuery.of(context).size.height * 0.45, // 整個容器高度為屏幕高度的 50%
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 3, // PieChart 占用更多空間
-                    child: DepartmentPieChart(
-                      year: selectedYear,
-                      city: selectedCity == "全國"
-                          ? "Total"
-                          : selectedCity, // 傳入選中的年份
-                    ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                DepartmentPieChart(
+                  year: selectedYear,
+                  city:
+                      selectedCity == "全國" ? "Total" : selectedCity, // 傳入選中的年份
+                ),
+                const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
+                Container(
+                  margin: const EdgeInsets.only(left: 16.0, right: 8.0), // 左右邊距
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.8, // 限制寬度
                   ),
-                  const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
-                  Container(
-                    margin:
-                        const EdgeInsets.only(left: 16.0, right: 8.0), // 左右邊距
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.8, // 限制寬度
-                    ),
-                    child: DepartmentLegend(
-                      departmentList: allDepartments,
-                    ),
+                  child: DepartmentLegend(
+                    departmentList: allDepartments,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

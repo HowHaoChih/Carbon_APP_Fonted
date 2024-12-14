@@ -5,7 +5,7 @@ class DepartmentLegend extends StatelessWidget {
 
   const DepartmentLegend({
     required this.departmentList,
-    super.key, // 使用 super 的簡化參數形式
+    super.key,
   });
 
   String _getDepartmentName(String key) {
@@ -13,13 +13,13 @@ class DepartmentLegend extends StatelessWidget {
       case "Residential":
         return "住宅部門";
       case "Services":
-        return "服務業";
+        return "服務業　";
       case "Energy":
         return "能源部門";
       case "Manufacturing":
-        return "製造業";
+        return "製造業　";
       case "Transportation":
-        return "運輸業";
+        return "運輸業　";
       case "Electricity":
         return "電力部門";
       default:
@@ -52,6 +52,7 @@ class DepartmentLegend extends StatelessWidget {
       final color = _getColorForDepartment(departmentKey);
       final departmentName = _getDepartmentName(departmentKey);
       return Row(
+        mainAxisAlignment: MainAxisAlignment.center, // 內容置中
         children: [
           Container(
             width: 16,
@@ -68,20 +69,34 @@ class DepartmentLegend extends StatelessWidget {
     }).toList();
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center, // 整體置中
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.center, // 第一排置中
           crossAxisAlignment: CrossAxisAlignment.start,
           children: legendItems
               .sublist(0, 3)
-              .map((item) => Expanded(child: item))
+              .map((item) => Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft, // 顏色部分對齊左側
+                      child: item,
+                    ),
+                  ))
               .toList(),
         ),
         const SizedBox(height: 8),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center, // 第二排置中
           crossAxisAlignment: CrossAxisAlignment.start,
           children: legendItems
               .sublist(3)
-              .map((item) => Expanded(child: item))
+              .map((item) => Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft, // 顏色部分對齊左側
+                      child: item,
+                    ),
+                  ))
               .toList(),
         ),
       ],

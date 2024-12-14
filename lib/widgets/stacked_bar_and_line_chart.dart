@@ -227,111 +227,125 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 左側固定的數量級刻度
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(6, (index) {
-            final value = (adjustedMaxValue / 5 * index).toInt();
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Text(
-                value.toString(),
-                style: const TextStyle(fontSize: 10),
-              ),
-            );
-          }).reversed.toList(),
-        ),
-        const SizedBox(width: 5),
-        // 柱狀圖部分
-        Expanded(
-          child: SingleChildScrollView(
-            controller: _scrollController, // 添加滾動控制器
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: 1000,
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: barGroups.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : Stack(
-                          children: [
-                            BarChart(
-                              BarChartData(
-                                alignment: BarChartAlignment.center,
-                                groupsSpace: 20,
-                                barGroups: barGroups,
-                                titlesData: FlTitlesData(
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      getTitlesWidget: (value, _) {
-                                        if (value < 0 ||
-                                            value >= years.length) {
-                                          return const SizedBox();
-                                        }
-                                        return Text(
-                                          years[value.toInt()].toString(),
-                                          style: const TextStyle(fontSize: 10),
-                                        );
-                                      },
+    final size = MediaQuery.of(context).size;
+    final bool isWideScreen = size.width > 600; // 判斷是否為寬螢幕
+
+    return Center(
+      child: Container(
+        width: isWideScreen ? size.width * 0.8 : null, // 寬螢幕時限制寬度
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 左側固定的數量級刻度
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(6, (index) {
+                final value = (adjustedMaxValue / 5 * index).toInt();
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Text(
+                    value.toString(),
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              }).reversed.toList(),
+            ),
+            const SizedBox(width: 5),
+            // 柱狀圖部分
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController, // 添加滾動控制器
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: 1000, // 每組柱狀圖固定寬度
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: barGroups.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : Stack(
+                              children: [
+                                BarChart(
+                                  BarChartData(
+                                    alignment: BarChartAlignment.center,
+                                    groupsSpace: 20, // 柱間間距
+                                    barGroups: barGroups,
+                                    titlesData: FlTitlesData(
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          getTitlesWidget: (value, _) {
+                                            if (value < 0 ||
+                                                value >= years.length) {
+                                              return const SizedBox();
+                                            }
+                                            return Text(
+                                              years[value.toInt()].toString(),
+                                              style:
+                                                  const TextStyle(fontSize: 10),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      leftTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                    ),
+                                    barTouchData: BarTouchData(enabled: true),
+                                    gridData: FlGridData(
+                                      show: true,
+                                      getDrawingHorizontalLine: (value) =>
+                                          FlLine(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        strokeWidth: 1,
+                                      ),
                                     ),
                                   ),
-                                  leftTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  topTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  rightTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
+                                ),
+                                LineChart(
+                                  LineChartData(
+                                    lineBarsData: [
+                                      LineChartBarData(
+                                        spots: lineData,
+                                        isCurved: true,
+                                        color: Colors.black,
+                                        barWidth: 2,
+                                        belowBarData: BarAreaData(show: false),
+                                      ),
+                                    ],
+                                    titlesData: FlTitlesData(
+                                      show: false, // 隱藏標題
+                                    ),
+                                    gridData: FlGridData(show: false),
+                                    borderData: FlBorderData(show: false),
+                                    minX: -0.75,
+                                    maxX: 33.75,
+                                    minY: 0,
                                   ),
                                 ),
-                                barTouchData: BarTouchData(enabled: true),
-                                gridData: FlGridData(
-                                  show: true,
-                                  getDrawingHorizontalLine: (value) => FlLine(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    strokeWidth: 1,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
-                            LineChart(
-                              LineChartData(
-                                lineBarsData: [
-                                  LineChartBarData(
-                                    spots: lineData,
-                                    isCurved: true,
-                                    color: Colors.black,
-                                    barWidth: 2,
-                                    belowBarData: BarAreaData(show: false),
-                                  ),
-                                ],
-                                titlesData: FlTitlesData(
-                                  show: false, // 隱藏標題
-                                ),
-                                gridData: FlGridData(show: false),
-                                borderData: FlBorderData(show: false),
-                                minX: -0.75,
-                                maxX: 33.75,
-                                minY: 0,
-                              ),
-                            ),
-                          ],
-                        ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

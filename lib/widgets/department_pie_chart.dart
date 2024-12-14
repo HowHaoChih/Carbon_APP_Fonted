@@ -127,24 +127,38 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    // 其他部件的總高度（根據之前計算得出）
+    const double otherComponentsHeight = 270.0; // 包括 AppBar、高度和其他間距
+    final double availableHeight =
+        size.height - otherComponentsHeight; // 剩餘可用高度
+    final double maxDimension =
+        availableHeight < size.width ? availableHeight : size.width;
+
+    final double radius = maxDimension * 0.3; // 將 radius 限制為可用尺寸的 30%
+    final double pieChartSize = maxDimension * 0.8; // 圖表寬高限制為可用尺寸的 80%
+
     return SingleChildScrollView(
       child: Column(
         children: [
           Card(
             elevation: 4,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: departmentData.isEmpty
                   ? const Center(child: CircularProgressIndicator())
-                  : AspectRatio(
-                      aspectRatio: 1.2,
+                  : SizedBox(
+                      width: pieChartSize, // 設定動態寬度
+                      height: pieChartSize, // 設定動態高度
                       child: PieChart(
                         PieChartData(
-                          sections: _getSections(),
+                          sections: _getSections(radius),
                           sectionsSpace: 1,
-                          centerSpaceRadius: 30,
+                          centerSpaceRadius: radius / 3,
                           borderData: FlBorderData(show: false),
                         ),
                       ),
@@ -156,17 +170,16 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     );
   }
 
-  List<PieChartSectionData> _getSections() {
+  List<PieChartSectionData> _getSections(double radius) {
     return departmentData.entries.map((entry) {
       final departmentKey = entry.key;
-      // final department = _getDepartmentName(departmentKey);
       final value = entry.value;
       final color = _getColorForDepartment(departmentKey);
       return PieChartSectionData(
         color: color,
         value: value,
         title: '${value.toStringAsFixed(1)}%',
-        radius: 90,
+        radius: radius, // 根據動態計算的 radius 設定
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
