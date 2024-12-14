@@ -7,8 +7,6 @@ import 'screens/setting_page.dart';
 import 'screens/favorite_screen.dart'; // 收藏頁面
 import 'screens/home_screen.dart'; // 首頁內容
 import 'bottom_navigation_bar.dart'; // 引入自定義的 BottomNavigationBar
-import 'package:hive_flutter/hive_flutter.dart'; // 若未引入 Hive，確保加入這行
-import 'localization_utils.dart'; // 引入 localization_utils.dart
 
 void main() {
   runApp(const CarbonApp());
