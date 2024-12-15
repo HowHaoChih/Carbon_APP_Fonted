@@ -1,0 +1,1 @@
+ C:\\Users\\yaoji\\Documents\\GitHub\\Carbon_APP_Front-end\\.dart_tool\\flutter_build\\682be2ddc5633eb8cbbfd925a107a3e1\\native_assets.yaml: 
