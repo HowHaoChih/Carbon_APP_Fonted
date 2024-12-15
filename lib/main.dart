@@ -168,7 +168,7 @@ class _MainScreenState extends State<MainScreen> {
                 title: const Text('地圖視角'),
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const MapViewScreen(),
+                    builder: (context) => const TaiwanMapScreen(),
                   ));
                 },
               ),

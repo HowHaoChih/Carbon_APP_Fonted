@@ -44,6 +44,10 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  # 繪製地圖
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.0
+
 dev_dependencies:
   # 測試工具
   flutter_test:
@@ -71,8 +75,9 @@ flutter:
     - assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv
     - assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv
     - assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv
-    - assets/icons/
+    - assets/data/twCounty2010merge.geo.json
     - assets/data/favorite.json
+    - assets/icons/
 
   # 自定義字體
   # fonts:
