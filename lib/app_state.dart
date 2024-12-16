@@ -11,8 +11,8 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
 
-  // 默認語言為繁體中文
-  Locale _locale = const Locale('zh', 'TW');
+  // 默認語言為英文
+Locale _locale = const Locale('en', 'US');
 
   Locale get locale => _locale;
 

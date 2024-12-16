@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 
 class DepartmentLegend extends StatelessWidget {
   final List<String> departmentList;
@@ -8,20 +9,20 @@ class DepartmentLegend extends StatelessWidget {
     super.key, // 使用 super 的簡化參數形式
   });
 
-  String _getDepartmentName(String key) {
+  String _getDepartmentName(BuildContext context, String key) {
     switch (key) {
       case "Residential":
-        return "住宅部門";
+        return context.l10n.residential;
       case "Services":
-        return "服務業";
+        return context.l10n.services;
       case "Energy":
-        return "能源部門";
+        return context.l10n.energy;
       case "Manufacturing":
-        return "製造業";
+        return context.l10n.manufacturing;
       case "Transportation":
-        return "運輸業";
+        return context.l10n.transportation;
       case "Electricity":
-        return "電力部門";
+        return context.l10n.electricity;
       default:
         return key;
     }
@@ -50,7 +51,7 @@ class DepartmentLegend extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> legendItems = departmentList.map((departmentKey) {
       final color = _getColorForDepartment(departmentKey);
-      final departmentName = _getDepartmentName(departmentKey);
+      final departmentName = _getDepartmentName(context, departmentKey);
       return Row(
         children: [
           Container(
@@ -59,32 +60,37 @@ class DepartmentLegend extends StatelessWidget {
             color: color,
           ),
           const SizedBox(width: 8),
-          Text(
-            departmentName,
-            style: const TextStyle(fontSize: 14),
+          Flexible(
+            child: Text(
+              departmentName,
+              style: const TextStyle(fontSize: 14),
+              overflow: TextOverflow.ellipsis, // 防止文字超出邊界
+            ),
           ),
         ],
       );
     }).toList();
 
+    // 計算每列最多項目數量
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final int itemsPerRow = screenWidth ~/ 150; // 每個項目大約佔 150 像素的寬度
+
+    // 將項目分組
+    List<List<Widget>> rows = [];
+    for (int i = 0; i < legendItems.length; i += itemsPerRow) {
+      rows.add(legendItems.sublist(
+        i,
+        i + itemsPerRow > legendItems.length ? legendItems.length : i + itemsPerRow,
+      ));
+    }
+
     return Column(
-      children: [
-        Row(
+      children: rows.map((row) {
+        return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: legendItems
-              .sublist(0, 3)
-              .map((item) => Expanded(child: item))
-              .toList(),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: legendItems
-              .sublist(3)
-              .map((item) => Expanded(child: item))
-              .toList(),
-        ),
-      ],
+          children: row.map((item) => Expanded(child: item)).toList(),
+        );
+      }).toList(),
     );
   }
 }

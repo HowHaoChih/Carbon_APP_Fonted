@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/stacked_bar_and_line_chart.dart'; // 引入城市碳排放圖表的 widget
+import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
+import '../l10n/l10n.dart';
 
 class CountyIndustryViewScreen extends StatefulWidget {
   const CountyIndustryViewScreen({super.key});
@@ -10,31 +12,43 @@ class CountyIndustryViewScreen extends StatefulWidget {
 }
 
 class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
+  
   // 縣市列表
-  final List<String> counties = [
-    "南投縣",
-    "台中市",
-    "台北市",
-    "台南市",
-    "台東縣",
-    "嘉義市",
-    "嘉義縣",
-    "基隆市",
-    "宜蘭縣",
-    "屏東縣",
-    "彰化縣",
-    "新北市",
-    "新竹市",
-    "新竹縣",
-    "桃園市",
-    "澎湖縣",
-    "花蓮縣",
-    "苗栗縣",
-    "連江縣",
-    "金門縣",
-    "雲林縣",
-    "高雄市"
-  ];
+  late List<String> cities;
+  // 選中的城市
+  late String selectedCity;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 確保 `context` 在此方法中可以安全使用
+    cities = [
+      context.l10n.entire_country,
+      context.l10n.taipei_city,
+      context.l10n.new_taipei_city,
+      context.l10n.taoyuan_city,
+      context.l10n.taizhong_city,
+      context.l10n.tainan_city,
+      context.l10n.kaohsiung_city,
+      context.l10n.hsinchu_city,
+      context.l10n.hsinchu_county,
+      context.l10n.miaoli_county,
+      context.l10n.changhua_county,
+      context.l10n.nantou_county,
+      context.l10n.yunlin_county,
+      context.l10n.chiayi_city,
+      context.l10n.chiayi_county,
+      context.l10n.pingtung_county,
+      context.l10n.yilan_county,
+      context.l10n.hualien_county,
+      context.l10n.taitung_city,
+      context.l10n.penghu_county,
+      context.l10n.kinmen_county,
+      context.l10n.lienchiang_county,
+      context.l10n.keelung_city,
+    ];
+    selectedCity = cities.first; // 預設選中第一個城市
+  }
 
   // 產業列表（英文對應繁體中文）
   final Map<String, String> allDepartments = {
@@ -45,9 +59,6 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
     "Transportation": "交通運輸",
     "Electricity": "電力部門"
   };
-
-  // 選中的縣市
-  String selectedCounty = "台北市";
 
   // 選中的產業
   Set<String> selectedDepartments = {
@@ -81,7 +92,7 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
   @override
   Widget build(BuildContext context) {
     // 將產業列表分為 2 行
-    final departmentList = allDepartments.entries.toList();
+    final departmentName = _getDepartmentName(context, departmentKey);
     final firstRow =
         departmentList.sublist(0, (departmentList.length / 2).ceil());
     final secondRow =
@@ -98,8 +109,8 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: DropdownButtonFormField<String>(
-              value: selectedCounty,
-              items: counties.map((county) {
+              value: selectedCity,
+              items: cities.map((county) {
                 return DropdownMenuItem(
                   value: county,
                   child: Text(county),
@@ -108,7 +119,7 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
-                    selectedCounty = value; // 更新選中的縣市
+                    selectedCity = value; // 更新選中的縣市
                   });
                 }
               },
@@ -200,7 +211,7 @@ class _CountyIndustryViewScreenState extends State<CountyIndustryViewScreen> {
                 const SizedBox(width: 16), // 左側新增 16 像素的空白
                 Expanded(
                   child: StackedBarAndLineChart(
-                    city: selectedCounty, // 傳入選中的縣市
+                    city: selectedCity, // 傳入選中的縣市
                     selectedDepartments: selectedDepartments, // 傳入選中的產業
                   ),
                 ),

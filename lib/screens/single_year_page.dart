@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/department_pie_chart.dart'; // 引入圓餅圖 widget
 import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
+import '../l10n/l10n.dart';
 
 class DepartmentPieChartViewScreen extends StatefulWidget {
   const DepartmentPieChartViewScreen({super.key});
@@ -13,34 +14,10 @@ class DepartmentPieChartViewScreen extends StatefulWidget {
 class _DepartmentPieChartViewScreenState
     extends State<DepartmentPieChartViewScreen> {
   // 縣市列表
-  final List<String> cities = [
-    "全國",
-    "南投縣",
-    "台中市",
-    "台北市",
-    "台南市",
-    "台東縣",
-    "嘉義市",
-    "嘉義縣",
-    "基隆市",
-    "宜蘭縣",
-    "屏東縣",
-    "彰化縣",
-    "新北市",
-    "新竹市",
-    "新竹縣",
-    "桃園市",
-    "澎湖縣",
-    "花蓮縣",
-    "苗栗縣",
-    "連江縣",
-    "金門縣",
-    "雲林縣",
-    "高雄市"
-  ];
-
+  late List<String> cities;
   // 選中的城市
-  String selectedCity = "台北市";
+  late String selectedCity;
+
   // 年份列表
   final List<int> years = List<int>.generate(2023 - 1990 + 1, (i) => 1990 + i);
 
@@ -58,10 +35,42 @@ class _DepartmentPieChartViewScreenState
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 確保 `context` 在此方法中可以安全使用
+    cities = [
+      context.l10n.entire_country,
+      context.l10n.taipei_city,
+      context.l10n.new_taipei_city,
+      context.l10n.taoyuan_city,
+      context.l10n.taizhong_city,
+      context.l10n.tainan_city,
+      context.l10n.kaohsiung_city,
+      context.l10n.hsinchu_city,
+      context.l10n.hsinchu_county,
+      context.l10n.miaoli_county,
+      context.l10n.changhua_county,
+      context.l10n.nantou_county,
+      context.l10n.yunlin_county,
+      context.l10n.chiayi_city,
+      context.l10n.chiayi_county,
+      context.l10n.pingtung_county,
+      context.l10n.yilan_county,
+      context.l10n.hualien_county,
+      context.l10n.taitung_city,
+      context.l10n.penghu_county,
+      context.l10n.kinmen_county,
+      context.l10n.lienchiang_county,
+      context.l10n.keelung_city,
+    ];
+    selectedCity = cities.first; // 預設選中第一個城市
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('年份部門碳排放圓餅圖視圖'),
+        title: Text(context.l10n.single_year_view),
       ),
       body: Column(
         children: [
@@ -84,8 +93,8 @@ class _DepartmentPieChartViewScreenState
                   });
                 }
               },
-              decoration: const InputDecoration(
-                labelText: "選擇城市",
+              decoration: InputDecoration(
+                labelText: context.l10n.select_city,
                 border: OutlineInputBorder(),
               ),
               menuMaxHeight: 600, // 設置最大展開高度
@@ -110,8 +119,8 @@ class _DepartmentPieChartViewScreenState
                   });
                 }
               },
-              decoration: const InputDecoration(
-                labelText: "選擇年份",
+              decoration: InputDecoration(
+                labelText: context.l10n.select_year,
                 border: OutlineInputBorder(),
               ),
               menuMaxHeight: 600, // 設置最大展開高度
@@ -130,7 +139,7 @@ class _DepartmentPieChartViewScreenState
                     flex: 3, // PieChart 占用更多空間
                     child: DepartmentPieChart(
                       year: selectedYear,
-                      city: selectedCity == "全國"
+                      city: selectedCity == context.l10n.entire_country
                           ? "Total"
                           : selectedCity, // 傳入選中的年份
                     ),

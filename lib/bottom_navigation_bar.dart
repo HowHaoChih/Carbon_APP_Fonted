@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state.dart'; // 引入AppStatex
+import 'l10n/l10n.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -23,18 +24,18 @@ class CustomBottomNavigationBar extends StatelessWidget {
       selectedItemColor: appState.isDarkMode
           ? Colors.greenAccent
           : Colors.green[700], // 設定選中項目的顏色，這裡使用淺綠色
-      items: const [
+      items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: 'Home',
+          label: context.l10n.home,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.favorite),
-          label: 'Favorites',
+          label: context.l10n.favorites,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
-          label: 'Settings',
+          label: context.l10n.settings,
         ),
       ],
     );

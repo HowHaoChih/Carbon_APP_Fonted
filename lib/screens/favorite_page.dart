@@ -29,7 +29,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("我的最愛")),
+      // appBar: AppBar(title: Text("我的最愛")),
       body: favorites.isEmpty
           ? Center(child: Text("尚未建立我的最愛，按下右下角按鈕新增"))
           : ListView.builder(
