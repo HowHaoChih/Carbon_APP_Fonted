@@ -17,6 +17,7 @@ class _DepartmentPieChartViewScreenState
     extends State<DepartmentPieChartViewScreen> {
   // 縣市列表
   late List<String> cities;
+
   // 選中的城市
   late String selectedCity;
 

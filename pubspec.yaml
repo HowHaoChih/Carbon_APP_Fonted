@@ -26,10 +26,6 @@ dependencies:
   path_provider: ^2.0.15
   csv: ^6.0.0
 
-  # 本地化支持，用於多語言環境
-  flutter_localizations:
-    sdk: flutter
-
   # 繪製地圖
   flutter_map: ^7.0.2
   latlong2: ^0.9.0

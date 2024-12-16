@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/stacked_bar_and_line_chart.dart'; // 引入堆疊柱狀圖與折線圖的 widget
 import '../utils/department_utils.dart'; // 引入 department_utils.dart
 import '../utils/city_utils.dart';
+import '../l10n/l10n.dart';
 
 class IndustryViewScreen extends StatefulWidget {
   const IndustryViewScreen({super.key});
@@ -11,14 +12,22 @@ class IndustryViewScreen extends StatefulWidget {
 }
 
 class _IndustryViewScreenState extends State<IndustryViewScreen> {
-  // 縣市列表
-  final List<String> cities = CityUtils.getCountiesWithNation();
+  // 選中的城市
+  late String selectedCity;
 
   // 產業列表
   final List<String> allDepartments = DepartmentUtils.getAllDepartments();
+  
+  // 縣市列表
+  late List<String> cities;
 
-  // 選中的縣市
-  String selectedCity = "台北市";
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 在此時初始化 cities 並設定預設選中的城市
+    cities = CityUtils.getCountiesWithNation(context);
+    selectedCity = cities.first; // 預設選中第一個城市
+  }
 
   // 選中的產業
   Set<String> selectedDepartments = DepartmentUtils.getAllDepartments().toSet();
@@ -26,6 +35,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
   @override
   Widget build(BuildContext context) {
     // 將產業列表分為 2 行
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark; // 判斷是否為黑暗模式
     final departmentList = allDepartments;
     final firstRow =
         departmentList.sublist(0, (departmentList.length / 2).ceil());
@@ -34,7 +44,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('產業視圖'),
+        title: Text(context.l10n.industry_view),
       ),
       body: Column(
         children: [
@@ -57,8 +67,8 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                   });
                 }
               },
-              decoration: const InputDecoration(
-                labelText: "選擇縣市",
+              decoration: InputDecoration(
+                labelText: context.l10n.select_city,
                 border: OutlineInputBorder(),
               ),
               menuMaxHeight: 400, // 設置最大展開高度
@@ -73,11 +83,10 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: firstRow.map((department) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: FilterChip(
                       label: Text(
-                        DepartmentUtils.getDepartmentName(
-                            department), // 使用工具類獲取繁體中文名稱
+                        DepartmentUtils.getDepartmentName(context, department),
                       ),
                       selected: selectedDepartments.contains(department),
                       onSelected: (selected) {
@@ -91,16 +100,27 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                           }
                         });
                       },
-                      backgroundColor:
-                          DepartmentUtils.getDepartmentColor(department)
-                              .withOpacity(0.3), // 未選中背景色對應產業顏色
-                      selectedColor:
-                          DepartmentUtils.getDepartmentColor(department)
-                              .withOpacity(0.6), // 選中背景色對應產業顏色
-                      labelStyle: const TextStyle(
-                        color: Colors.black, // 文字顏色
+                      backgroundColor: isDarkMode
+                          ? Colors.black.withOpacity(0.1) // 暗色模式下的空心背景
+                          : Colors.white.withOpacity(0.9), // 亮色模式下的空心背景
+                      selectedColor: DepartmentUtils.getDepartmentColor(
+                        department,
+                        isDarkMode: isDarkMode,
+                      ).withOpacity(1.0), // 選中時的背景色
+                      side: BorderSide(
+                        color: DepartmentUtils.getDepartmentColor(
+                          department,
+                          isDarkMode: isDarkMode,
+                        ),
+                        width: 2.0, // 邊框寬度
+                      ),
+                      labelStyle: TextStyle(
+                        color: selectedDepartments.contains(department)
+                          ? Colors.black // 選中時字體顏色為黑色
+                          : (isDarkMode ? Colors.white : Colors.black), // 未選中時依據模式設定
                         fontSize: 14,
                       ),
+                      checkmarkColor: Colors.black, // 勾勾的顏色設置為黑色
                     ),
                   );
                 }).toList(),
@@ -111,11 +131,10 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: secondRow.map((department) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: FilterChip(
                       label: Text(
-                        DepartmentUtils.getDepartmentName(
-                            department), // 使用工具類獲取繁體中文名稱
+                        DepartmentUtils.getDepartmentName(context, department),
                       ),
                       selected: selectedDepartments.contains(department),
                       onSelected: (selected) {
@@ -129,16 +148,27 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                           }
                         });
                       },
-                      backgroundColor:
-                          DepartmentUtils.getDepartmentColor(department)
-                              .withOpacity(0.3), // 未選中背景色對應產業顏色
-                      selectedColor:
-                          DepartmentUtils.getDepartmentColor(department)
-                              .withOpacity(0.6), // 選中背景色對應產業顏色
-                      labelStyle: const TextStyle(
-                        color: Colors.black, // 文字顏色
+                      backgroundColor: isDarkMode
+                          ? Colors.black.withOpacity(0.1) // 暗色模式下的空心背景
+                          : Colors.white.withOpacity(0.9), // 亮色模式下的空心背景
+                      selectedColor: DepartmentUtils.getDepartmentColor(
+                        department,
+                        isDarkMode: isDarkMode,
+                      ).withOpacity(1.0), // 選中時的背景色
+                      side: BorderSide(
+                        color: DepartmentUtils.getDepartmentColor(
+                          department,
+                          isDarkMode: isDarkMode,
+                        ),
+                        width: 2.0, // 邊框寬度
+                      ),
+                      labelStyle: TextStyle(
+                        color: selectedDepartments.contains(department)
+                          ? Colors.black // 選中時字體顏色為黑色
+                          : (isDarkMode ? Colors.white : Colors.black), // 未選中時依據模式設定
                         fontSize: 14,
                       ),
+                      checkmarkColor: Colors.black, // 勾勾的顏色設置為黑色
                     ),
                   );
                 }).toList(),
@@ -155,7 +185,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 const SizedBox(width: 16), // 左側新增 16 像素的空白
                 Expanded(
                   child: StackedBarAndLineChart(
-                    city: selectedCity == "全國"
+                    city: selectedCity == context.l10n.entire_country
                         ? "Total"
                         : selectedCity, // 傳入 "Total" 或縣市名稱
                     selectedDepartments: selectedDepartments, // 傳入選中的產業

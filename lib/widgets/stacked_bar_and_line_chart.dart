@@ -6,6 +6,7 @@ import '../utils/city_utils.dart';
 import 'dart:convert';
 import 'dart:math';
 
+// 堆疊柱狀圖和折線圖的組件
 class StackedBarAndLineChart extends StatefulWidget {
   final String city; // 城市名稱
   final Set<String> selectedDepartments; // 傳入的選中產業
@@ -21,27 +22,27 @@ class StackedBarAndLineChart extends StatefulWidget {
 }
 
 class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
-  List<BarChartGroupData> barGroups = [];
-  List<FlSpot> lineData = []; // 折線圖數據點
-  List<int> years = [];
-  Map<String, List<double>> departmentData = {};
-  double adjustedMaxValue = 0; // 調整後的最大值（取整）
+  List<BarChartGroupData> barGroups = []; // 保存柱狀圖的數據
+  List<FlSpot> lineData = []; // 保存折線圖的數據點
+  List<int> years = []; // 保存年份數據
+  Map<String, List<double>> departmentData = {}; // 各部門的年度排放數據
+  double adjustedMaxValue = 0; // 調整後的最大值，用於圖表的 Y 軸
 
   final List<String> allDepartments =
-      DepartmentUtils.getAllDepartments(); // 固定產業順序
+      DepartmentUtils.getAllDepartments(); // 固定的產業順序，用於柱狀圖堆疊順序
 
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController(); // 用於控制柱狀圖的橫向滾動
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadData(); // 初始化時加載數據
   }
 
   @override
   void didUpdateWidget(StackedBarAndLineChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 檢查城市或選中產業集合是否發生變化
+    // 當城市或選中的產業改變時，重新加載數據
     if (oldWidget.city != widget.city ||
         !_isSetEqual(
             oldWidget.selectedDepartments, widget.selectedDepartments)) {
@@ -49,12 +50,14 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
     }
   }
 
+  // 判斷兩個 Set 是否相等
   bool _isSetEqual(Set<String> set1, Set<String> set2) {
-    // 比較兩個 Set 是否相等
     return set1.length == set2.length && set1.difference(set2).isEmpty;
   }
 
+  // 加載數據
   void _loadData() async {
+    // 讀取 CSV 文件
     final residentialData = await rootBundle.loadString(
         'assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv');
     final servicesData = await rootBundle.loadString(
@@ -68,7 +71,10 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
     final electricityData = await rootBundle
         .loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
 
-    final cityIndex = CityUtils.getCityIndex(widget.city);
+    // 獲取當前選擇城市的索引
+    final cityIndex = CityUtils.getCityIndex(widget.city, context);
+
+    // 將所有文件按部門分類存入 Map
     final allDataFiles = {
       "Residential": residentialData,
       "Services": servicesData,
@@ -78,54 +84,53 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
       "Electricity": electricityData,
     };
 
+    // 年份範圍
     final yearRange = List<int>.generate(2024 - 1990, (i) => 1990 + i);
 
-    departmentData = {};
+    departmentData = {}; // 重置部門數據
 
-    // 解析每個部門的資料
+    // 解析每個部門的數據
     for (final department in allDepartments) {
-      final data = allDataFiles[department];
-      departmentData[department] = List<double>.filled(yearRange.length, 0);
+      final data = allDataFiles[department]; // 對應部門的數據
+      departmentData[department] = List<double>.filled(yearRange.length, 0); // 初始化數據列表
       if (data != null) {
-        final rows = const LineSplitter().convert(data);
-        for (var i = 1; i < rows.length; i++) {
-          final row = rows[i].split(',');
-          final year = int.parse(row[0]);
-          final value = double.parse(row[cityIndex]);
+        final rows = const LineSplitter().convert(data); // 分割 CSV 行
+        for (var i = 1; i < rows.length; i++) { // 跳過標題行
+          final row = rows[i].split(','); // 分割每行的數據
+          final year = int.parse(row[0]); // 讀取年份
+          final value = double.parse(row[cityIndex]); // 對應城市的值
           if (year >= 1990 && year <= 2023) {
-            departmentData[department]![year - 1990] += value;
+            departmentData[department]![year - 1990] += value; // 累加排放數據
           }
         }
       }
     }
 
-    years = yearRange;
+    years = yearRange; // 設置年份數據
 
-    // 生成堆疊棒狀圖資料和折線圖數據
+    // 生成柱狀圖和折線圖數據
     barGroups = [];
     lineData = [];
     for (var index = 0; index < yearRange.length; index++) {
-      double stackBottom = 0;
-      double total = 0;
+      double stackBottom = 0; // 堆疊柱狀圖的初始高度
+      double total = 0; // 當前年份的總排放量
       final rodStackItems = allDepartments.map((department) {
         final value = widget.selectedDepartments.contains(department)
             ? departmentData[department]![index]
-            : 0; // 若未勾選，值設為 0
-        total += value; // 計算當前年份的總值
+            : 0; // 如果未選中該部門，數值為 0
+        total += value;
 
-        // 使用靜態方法獲取顏色
-        final color = DepartmentUtils.getDepartmentColor(department);
-
+        // 創建堆疊項
         final stackItem = BarChartRodStackItem(
           stackBottom,
-          stackBottom + value, // 堆疊到新高度
-          color, // 部門顏色
+          stackBottom + value, // 新的高度
+          DepartmentUtils.getDepartmentColor(department, isDarkMode: Theme.of(context).brightness == Brightness.dark,), // 部門顏色
         );
-        stackBottom += value; // 更新堆疊基底
+        stackBottom += value; // 更新基底高度
         return stackItem;
       }).toList();
 
-      // 添加柱狀圖資料
+      // 添加柱狀圖數據
       barGroups.add(BarChartGroupData(
         x: index,
         barRods: [
@@ -133,7 +138,6 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
             toY: stackBottom, // 堆疊的總高度
             rodStackItems: rodStackItems, // 堆疊項目
             width: 15, // 柱條寬度
-            borderRadius: BorderRadius.zero, // 確保柱狀條沒有圓角
           ),
         ],
       ));
@@ -150,22 +154,23 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
       ),
     );
 
-    // 在數據加載完成後將滾動條移到最右側
+    // 在數據加載完成後自動滾動到最右側
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
 
-    setState(() {});
+    setState(() {}); // 刷新界面
   }
 
+  // 調整最大值到整數的邏輯
   double _adjustMaxValue(double value) {
     if (value == 0) return 0;
 
     if (value < 10) {
-      return value.ceilToDouble(); // 直接返回向上取整的值
+      return value.ceilToDouble(); // 小於 10 直接取整
     }
 
-    final int magnitude = pow(10, value.toInt().toString().length - 2).toInt();
+    final int magnitude = pow(10, value.toInt().toString().length - 2).toInt(); // 計算數量級
 
     final double roundedValue =
         (value / magnitude).ceil() * magnitude.toDouble();
@@ -180,7 +185,7 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final bool isWideScreen = size.width > 600; // 判斷是否為寬螢幕
+    final bool isWideScreen = size.width > 600; // 判斷是否為寬屏
 
     return Center(
       child: SizedBox(
@@ -188,36 +193,34 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 左側固定的數量級刻度
+            // 左側的刻度
             Padding(
-              padding: const EdgeInsets.only(bottom: 22.0), // 提高底部位置
+              padding: const EdgeInsets.only(bottom: 22.0), // 調整位置
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround, // 刻度間隙更均勻
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: List.generate(6, (index) {
                   final value = (adjustedMaxValue / 5 * index).toInt();
                   return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 3.0), // 減小刻度之間的間距
+                    padding: const EdgeInsets.symmetric(vertical: 3.0),
                     child: Text(
                       value.toString(),
                       style: const TextStyle(fontSize: 10),
                     ),
                   );
-                }).reversed.toList(),
+                }).reversed.toList(), // 倒序顯示
               ),
             ),
             const SizedBox(width: 5),
-            // 柱狀圖部分
+            // 柱狀圖和折線圖
             Expanded(
               child: SingleChildScrollView(
-                controller: _scrollController, // 添加滾動控制器
+                controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: 1000, // 每組柱狀圖固定寬度
+                  width: 1000,
                   child: Card(
                     elevation: 0,
-                    color: Theme.of(context)
-                        .scaffoldBackgroundColor, // 設置 Card 的背景顏色
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -230,7 +233,7 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
                                 BarChart(
                                   BarChartData(
                                     alignment: BarChartAlignment.center,
-                                    groupsSpace: 20, // 柱間間距
+                                    groupsSpace: 20,
                                     barGroups: barGroups,
                                     titlesData: FlTitlesData(
                                       bottomTitles: AxisTitles(
@@ -271,8 +274,6 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
                                         strokeWidth: 1,
                                       ),
                                     ),
-                                    // backgroundColor: Theme.of(context)
-                                    //     .scaffoldBackgroundColor, // 設置背景顏色
                                   ),
                                 ),
                                 LineChart(
@@ -283,15 +284,13 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
                                         isCurved: true,
                                         color: Theme.of(context).brightness ==
                                                 Brightness.dark
-                                            ? Colors.grey // 在黑暗模式中顯示灰色
-                                            : Colors.black, // 在亮模式中顯示黑色
+                                            ? Colors.grey
+                                            : Colors.black,
                                         barWidth: 2,
                                         belowBarData: BarAreaData(show: false),
                                       ),
                                     ],
-                                    titlesData: FlTitlesData(
-                                      show: false, // 隱藏標題
-                                    ),
+                                    titlesData: FlTitlesData(show: false),
                                     gridData: FlGridData(show: false),
                                     borderData: FlBorderData(show: false),
                                     minX: -0.75,

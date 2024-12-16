@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 
 /// 提供與部門相關的工具方法
 class DepartmentUtils {
@@ -14,43 +15,43 @@ class DepartmentUtils {
     ];
   }
 
-  /// 根據部門的英文名稱回傳對應的中文名稱
-  static String getDepartmentName(String key) {
+  /// 根據部門的英文名稱回傳對應的中英文名稱
+  static String getDepartmentName(BuildContext context, String key) {
     switch (key) {
       case "Residential":
-        return "住宅部門";
+        return context.l10n.residential;
       case "Services":
-        return "服務業　";
+        return context.l10n.services;
       case "Energy":
-        return "能源部門";
+        return context.l10n.energy;
       case "Manufacturing":
-        return "製造部門";
+        return context.l10n.manufacturing;
       case "Transportation":
-        return "運輸部門";
+        return context.l10n.transportation;
       case "Electricity":
-        return "電力部門";
+        return context.l10n.electricity;
       default:
-        return key; // 如果沒有對應的中文名稱，則直接回傳原始值
+        return key;
     }
   }
 
-  /// 根據部門的英文名稱回傳對應的顏色
-  static Color getDepartmentColor(String department) {
+    /// 根據部門的英文名稱和當前主題模式回傳對應的顏色
+  static Color getDepartmentColor(String department, {required bool isDarkMode}) {
     switch (department) {
       case "Residential":
-        return Colors.orange;
+        return isDarkMode ? Color(0xffffb171) : Color(0xfff59e0b);
       case "Services":
-        return Colors.blue;
+        return isDarkMode ? Color(0xfffdd147) : Color(0xffeab308);
       case "Energy":
-        return Colors.green;
+        return isDarkMode ? Color(0xFFbaf264) : Color(0xff84cc16);
       case "Manufacturing":
-        return Colors.purple;
+        return isDarkMode ? Color(0xff09de76) : Color(0xff09de76);
       case "Transportation":
-        return Colors.red;
+        return isDarkMode ? Color(0xFF6ee7bf) : Color(0xff10b981);
       case "Electricity":
-        return Colors.yellow;
+        return isDarkMode ? Color(0xff06b6d4) : Color(0xff06b6d4);
       default:
-        return Colors.grey; // 預設顏色
+        return isDarkMode ? Color(0xFFFF0000FF) : Colors.grey; // 預設顏色
     }
   }
 }

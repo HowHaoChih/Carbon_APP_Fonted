@@ -13,7 +13,7 @@ class DepartmentLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> legendItems = departmentList.map((departmentKey) {
-      final color = DepartmentUtils.getDepartmentColor(departmentKey);
+      final color = DepartmentUtils.getDepartmentColor(departmentKey, isDarkMode: Theme.of(context).brightness == Brightness.dark,);
       final departmentName = DepartmentUtils.getDepartmentName(context, departmentKey);
       return Row(
         mainAxisAlignment: MainAxisAlignment.center, // 內容置中

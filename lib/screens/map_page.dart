@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../l10n/l10n.dart';
 
 class TaiwanMapScreen extends StatefulWidget {
   const TaiwanMapScreen({super.key});
@@ -128,7 +129,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
     }).toList();
   }
 
-  Widget _buildColorLegend() {
+  Widget _buildColorLegend(BuildContext context) {
     return Container(
       width: 200,
       padding: const EdgeInsets.all(8),
@@ -141,8 +142,8 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            '碳強度 (10ktonCO₂e)',
+          Text(
+            context.l10n.carbon,
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
@@ -183,7 +184,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('台灣碳排放熱點圖'),
+        title: Text(context.l10n.map_view),
       ),
       body: Stack(
         children: [
@@ -194,7 +195,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
                 child: Row(
                   children: [
                     // 年份滑桿
-                    const Text('年份:'),
+                    Text(context.l10n.year),
                     Expanded(
                       child: Slider(
                         value: selectedYear.toDouble(),
@@ -211,7 +212,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
                       ),
                     ),
                     Text('$selectedYear '), // 顯示當前年份
-                    const Text('月份:'),
+                    Text(context.l10n.month),
                     Expanded(
                       child: Slider(
                         value: selectedMonth.toDouble(),
@@ -251,7 +252,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
           Positioned(
             right: 16,
             bottom: 16,
-            child: _buildColorLegend(),
+            child: _buildColorLegend(context),
           ),
         ],
       ),

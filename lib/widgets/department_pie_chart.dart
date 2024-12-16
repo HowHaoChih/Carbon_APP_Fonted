@@ -66,7 +66,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         for (var i = 1; i < rows.length; i++) {
           final row = rows[i].split(',');
           final year = int.parse(row[0]);
-          final cityIndex = CityUtils.getCityIndex(widget.city);
+          final cityIndex = CityUtils.getCityIndex(widget.city, context);
           final value = double.parse(row[cityIndex]); // 根據選定的城市取值
           if (year == widget.year) {
             departmentData[department] = value;
@@ -140,7 +140,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     return departmentData.entries.map((entry) {
       final departmentKey = entry.key;
       final value = entry.value;
-      final color = DepartmentUtils.getDepartmentColor(departmentKey);
+      final color = DepartmentUtils.getDepartmentColor(departmentKey, isDarkMode: Theme.of(context).brightness == Brightness.dark,);
       return PieChartSectionData(
         color: color,
         value: value,
