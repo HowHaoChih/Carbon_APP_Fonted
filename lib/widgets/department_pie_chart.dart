@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
+import '../utils/department_utils.dart';
+import '../utils/city_utils.dart';
 import 'dart:convert';
 
 class DepartmentPieChart extends StatefulWidget {
@@ -18,45 +20,9 @@ class DepartmentPieChart extends StatefulWidget {
 }
 
 class _DepartmentPieChartState extends State<DepartmentPieChart> {
-  int _getCityIndex(String city) {
-    final cities = [
-      "Total",
-      "南投縣",
-      "台中市",
-      "台北市",
-      "台南市",
-      "台東縣",
-      "嘉義市",
-      "嘉義縣",
-      "基隆市",
-      "宜蘭縣",
-      "屏東縣",
-      "彰化縣",
-      "新北市",
-      "新竹市",
-      "新竹縣",
-      "桃園市",
-      "澎湖縣",
-      "花蓮縣",
-      "苗栗縣",
-      "連江縣",
-      "金門縣",
-      "雲林縣",
-      "高雄市"
-    ];
-    return cities.indexOf(city) + 2;
-  }
-
   Map<String, double> departmentData = {};
 
-  final List<String> allDepartments = [
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  ];
+  final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
   void initState() {
@@ -100,7 +66,7 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         for (var i = 1; i < rows.length; i++) {
           final row = rows[i].split(',');
           final year = int.parse(row[0]);
-          final cityIndex = _getCityIndex(widget.city);
+          final cityIndex = CityUtils.getCityIndex(widget.city);
           final value = double.parse(row[cityIndex]); // 根據選定的城市取值
           if (year == widget.year) {
             departmentData[department] = value;
@@ -127,24 +93,38 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    // 其他部件的總高度（根據之前計算得出）
+    const double otherComponentsHeight = 270.0; // 包括 AppBar、高度和其他間距
+    final double availableHeight =
+        size.height - otherComponentsHeight; // 剩餘可用高度
+    final double maxDimension =
+        availableHeight < size.width ? availableHeight : size.width;
+
+    final double radius = maxDimension * 0.3; // 將 radius 限制為可用尺寸的 30%
+    final double pieChartSize = maxDimension * 0.8; // 圖表寬高限制為可用尺寸的 80%
+
     return SingleChildScrollView(
       child: Column(
         children: [
           Card(
             elevation: 4,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: departmentData.isEmpty
                   ? const Center(child: CircularProgressIndicator())
-                  : AspectRatio(
-                      aspectRatio: 1.2,
+                  : SizedBox(
+                      width: pieChartSize, // 設定動態寬度
+                      height: pieChartSize, // 設定動態高度
                       child: PieChart(
                         PieChartData(
-                          sections: _getSections(),
+                          sections: _getSections(radius),
                           sectionsSpace: 1,
-                          centerSpaceRadius: 30,
+                          centerSpaceRadius: radius / 3,
                           borderData: FlBorderData(show: false),
                         ),
                       ),
@@ -156,17 +136,16 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     );
   }
 
-  List<PieChartSectionData> _getSections() {
+  List<PieChartSectionData> _getSections(double radius) {
     return departmentData.entries.map((entry) {
       final departmentKey = entry.key;
-      // final department = _getDepartmentName(departmentKey);
       final value = entry.value;
-      final color = _getColorForDepartment(departmentKey);
+      final color = DepartmentUtils.getDepartmentColor(departmentKey);
       return PieChartSectionData(
         color: color,
         value: value,
         title: '${value.toStringAsFixed(1)}%',
-        radius: 90,
+        radius: radius, // 根據動態計算的 radius 設定
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
@@ -174,24 +153,5 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         ),
       );
     }).toList();
-  }
-
-  Color _getColorForDepartment(String department) {
-    switch (department) {
-      case "Residential":
-        return Colors.orange;
-      case "Services":
-        return Colors.blue;
-      case "Energy":
-        return Colors.green;
-      case "Manufacturing":
-        return Colors.purple;
-      case "Transportation":
-        return Colors.red;
-      case "Electricity":
-        return Colors.yellow;
-      default:
-        return Colors.grey;
-    }
   }
 }

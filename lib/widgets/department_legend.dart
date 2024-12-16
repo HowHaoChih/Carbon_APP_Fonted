@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/department_utils.dart';
 import '../l10n/l10n.dart';
 
 class DepartmentLegend extends StatelessWidget {
@@ -6,53 +7,16 @@ class DepartmentLegend extends StatelessWidget {
 
   const DepartmentLegend({
     required this.departmentList,
-    super.key, // 使用 super 的簡化參數形式
+    super.key,
   });
-
-  String _getDepartmentName(BuildContext context, String key) {
-    switch (key) {
-      case "Residential":
-        return context.l10n.residential;
-      case "Services":
-        return context.l10n.services;
-      case "Energy":
-        return context.l10n.energy;
-      case "Manufacturing":
-        return context.l10n.manufacturing;
-      case "Transportation":
-        return context.l10n.transportation;
-      case "Electricity":
-        return context.l10n.electricity;
-      default:
-        return key;
-    }
-  }
-
-  Color _getColorForDepartment(String department) {
-    switch (department) {
-      case "Residential":
-        return Colors.orange;
-      case "Services":
-        return Colors.blue;
-      case "Energy":
-        return Colors.green;
-      case "Manufacturing":
-        return Colors.purple;
-      case "Transportation":
-        return Colors.red;
-      case "Electricity":
-        return Colors.yellow;
-      default:
-        return Colors.grey;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> legendItems = departmentList.map((departmentKey) {
-      final color = _getColorForDepartment(departmentKey);
-      final departmentName = _getDepartmentName(context, departmentKey);
+      final color = DepartmentUtils.getDepartmentColor(departmentKey);
+      final departmentName = DepartmentUtils.getDepartmentName(context, departmentKey);
       return Row(
+        mainAxisAlignment: MainAxisAlignment.center, // 內容置中
         children: [
           Container(
             width: 16,
@@ -85,12 +49,37 @@ class DepartmentLegend extends StatelessWidget {
     }
 
     return Column(
-      children: rows.map((row) {
-        return Row(
+      mainAxisAlignment: MainAxisAlignment.center, // 整體置中
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center, // 第一排置中
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: row.map((item) => Expanded(child: item)).toList(),
-        );
-      }).toList(),
+          children: legendItems
+              .sublist(0, 3)
+              .map((item) => Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft, // 顏色部分對齊左側
+                      child: item,
+                    ),
+                  ))
+              .toList(),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center, // 第二排置中
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: legendItems
+              .sublist(3)
+              .map((item) => Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft, // 顏色部分對齊左側
+                      child: item,
+                    ),
+                  ))
+              .toList(),
+        ),
+      ],
     );
   }
 }

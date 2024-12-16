@@ -5,7 +5,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/industry_page.dart';
-import 'screens/county_industry_page.dart';
 import 'screens/single_year_page.dart';
 import 'screens/map_page.dart';
 import 'screens/settings_page.dart';
@@ -158,15 +157,6 @@ class _MainScreenState extends State<MainScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.format_list_bulleted),
-                title: Text(context.l10n.county_industry_view),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const CountyIndustryViewScreen(),
-                  ));
-                },
-              ),
-              ListTile(
                 leading: const Icon(Icons.pie_chart),
                 title: Text(context.l10n.single_year_view),
                 onTap: () {
@@ -180,7 +170,7 @@ class _MainScreenState extends State<MainScreen> {
                 title: Text(context.l10n.map_view),
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const MapViewScreen(),
+                    builder: (context) => const TaiwanMapScreen(),
                   ));
                 },
               ),

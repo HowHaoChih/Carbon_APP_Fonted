@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../widgets/department_pie_chart.dart'; // 引入圓餅圖 widget
 import '../widgets/department_legend.dart'; // 引入部門圖例的 widget
 import '../l10n/l10n.dart';
+import '../utils/department_utils.dart'; // 引入 department_utils.dart
+import '../utils/city_utils.dart';
 
 class DepartmentPieChartViewScreen extends StatefulWidget {
   const DepartmentPieChartViewScreen({super.key});
@@ -25,14 +27,7 @@ class _DepartmentPieChartViewScreenState
   int selectedYear = 2023;
 
   // 所有產業選項
-  final List<String> allDepartments = [
-    "Residential",
-    "Services",
-    "Energy",
-    "Manufacturing",
-    "Transportation",
-    "Electricity"
-  ];
+  final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
   void didChangeDependencies() {
@@ -97,7 +92,8 @@ class _DepartmentPieChartViewScreenState
                 labelText: context.l10n.select_city,
                 border: OutlineInputBorder(),
               ),
-              menuMaxHeight: 600, // 設置最大展開高度
+              menuMaxHeight:
+                  MediaQuery.of(context).size.height * 0.5, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
@@ -123,40 +119,31 @@ class _DepartmentPieChartViewScreenState
                 labelText: context.l10n.select_year,
                 border: OutlineInputBorder(),
               ),
-              menuMaxHeight: 600, // 設置最大展開高度
+              menuMaxHeight:
+                  MediaQuery.of(context).size.height * 0.5, // 設置最大展開高度
             ),
           ),
           const SizedBox(height: 16), // 增加間距
           // 圖表展示
-          SizedBox(
-            height:
-                MediaQuery.of(context).size.height * 0.45, // 整個容器高度為屏幕高度的 50%
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 3, // PieChart 占用更多空間
-                    child: DepartmentPieChart(
-                      year: selectedYear,
-                      city: selectedCity == context.l10n.entire_country
-                          ? "Total"
-                          : selectedCity, // 傳入選中的年份
-                    ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                DepartmentPieChart(
+                  year: selectedYear, // 傳入選中的年份
+                  city: selectedCity == context.l10n.entire_country ? "Total" : selectedCity,
+                ),
+                const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
+                Container(
+                  margin: const EdgeInsets.only(left: 16.0, right: 8.0), // 左右邊距
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.8, // 限制寬度
                   ),
-                  const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
-                  Container(
-                    margin:
-                        const EdgeInsets.only(left: 16.0, right: 8.0), // 左右邊距
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.8, // 限制寬度
-                    ),
-                    child: DepartmentLegend(
-                      departmentList: allDepartments,
-                    ),
+                  child: DepartmentLegend(
+                    departmentList: allDepartments,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
