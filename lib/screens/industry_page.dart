@@ -28,6 +28,8 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
   // 縣市列表
   late List<String> cities;
 
+  Set<String> selectedDepartments = DepartmentUtils.getAllDepartments().toSet();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -42,7 +44,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
   }
 
   // 選中的產業
-  Set<String> selectedDepartments = DepartmentUtils.getAllDepartments().toSet();
+
 
   @override
   Widget build(BuildContext context) {

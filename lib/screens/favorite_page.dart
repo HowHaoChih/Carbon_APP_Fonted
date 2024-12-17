@@ -34,6 +34,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       print("讀取失敗: $e");
       setState(() => favorites = []);
     }
+    try {
+      final file = await _getFavoriteFile();
+      await file.writeAsString(jsonEncode([]));
+      print("已創建 favorite.json 文件");
+    } catch (e) {
+      print("創建文件失敗: $e");
+    }
   }
 
   Future<void> deleteFavorite(int index) async {
