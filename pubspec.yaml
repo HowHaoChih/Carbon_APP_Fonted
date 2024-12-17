@@ -1,0 +1,66 @@
+name: carbon_app
+description: >
+  A Flutter application to visualize carbon emissions data.
+  This app demonstrates data visualization with charts and manages state using Provider.
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.4 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  hive: ^2.0.4
+  hive_flutter: ^1.1.0
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.15
+  provider: ^6.1.2
+  fl_chart: ^0.69.0
+  http: ^1.2.2
+  shared_preferences: ^2.0.13
+  path_provider: ^2.0.15
+  csv: ^6.0.0
+
+  # 繪製地圖
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.0
+
+dev_dependencies:
+  hive_generator: ^2.0.1
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.3.3
+  json_serializable: ^6.6.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  # 靜態資產
+  assets:
+    - assets/images/Pigeon.jpeg
+    - assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv
+    - assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv
+    - assets/data/twCounty2010merge.geo.json
+    - lib/l10n/
+    - assets/data/favorite.json
+    - assets/icons/
+
+  # 自定義字體
+  # fonts:
+  #   - family: CustomFont
+  #     fonts:
+  #       - asset: fonts/CustomFont-Regular.ttf
+  #       - asset: fonts/CustomFont-Bold.ttf
+  #         weight: 700
