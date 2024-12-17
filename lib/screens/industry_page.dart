@@ -185,9 +185,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 const SizedBox(width: 16), // 左側新增 16 像素的空白
                 Expanded(
                   child: StackedBarAndLineChart(
-                    city: selectedCity == context.l10n.entire_country
-                        ? "Total"
-                        : selectedCity, // 傳入 "Total" 或縣市名稱
+                    city: selectedCity, // 傳入 "Total" 或縣市名稱
                     selectedDepartments: selectedDepartments, // 傳入選中的產業
                   ),
                 ),

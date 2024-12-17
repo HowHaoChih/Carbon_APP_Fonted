@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: size.width * 0.9,
                   height: size.height * 0.4,
                   child: StackedBarAndLineChart(
-                    city: "Total",
+                    city: context.l10n.entire_country,
                     selectedDepartments: allDepartments.toSet(),
                   ),
                 ),

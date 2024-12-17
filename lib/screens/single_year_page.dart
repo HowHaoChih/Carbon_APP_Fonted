@@ -132,7 +132,7 @@ class _DepartmentPieChartViewScreenState
               children: [
                 DepartmentPieChart(
                   year: selectedYear, // 傳入選中的年份
-                  city: selectedCity == context.l10n.entire_country ? "Total" : selectedCity,
+                  city: selectedCity,
                 ),
                 const SizedBox(height: 16), // PieChart 和 Legend 之間的間距
                 Container(
