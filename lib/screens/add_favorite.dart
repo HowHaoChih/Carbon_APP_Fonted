@@ -13,35 +13,18 @@ class AddFavoritePage extends StatefulWidget {
 
 class _AddFavoritePageState extends State<AddFavoritePage> {
   String? selectedCity;
-  List<String> industries = [
+
+  // 原始產業 key
+  final List<String> industries = [
     "Residential",
     "Services",
     "Energy",
     "Manufacturing",
     "Transportation",
-    "Electricity"
+    "Electricity",
   ];
 
-  static String getDepartmentName(BuildContext context, String key) {
-    switch (key) {
-      case "Residential":
-        return context.l10n.residential;
-      case "Services":
-        return context.l10n.services;
-      case "Energy":
-        return context.l10n.energy;
-      case "Manufacturing":
-        return context.l10n.manufacturing;
-      case "Transportation":
-        return context.l10n.transportation;
-      case "Electricity":
-        return context.l10n.electricity;
-      default:
-        return key;
-    }
-  }
-
-  List<String> selectedIndustries = [];
+  List<String> selectedIndustries = []; // 儲存選中的產業
 
   Future<File> _getFavoriteFile() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -74,7 +57,7 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
 
       final newFavorite = {
         "縣市": selectedCity,
-        "產業": selectedIndustries
+        "產業": selectedIndustries,
       };
 
       final file = await _getFavoriteFile();
@@ -96,6 +79,18 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n; // 獲取 l10n 實例
+
+    // 產業對應翻譯映射
+    final Map<String, String> industryTranslations = {
+      "Residential": l10n.residential,
+      "Services": l10n.services,
+      "Energy": l10n.energy,
+      "Manufacturing": l10n.manufacturing,
+      "Transportation": l10n.transportation,
+      "Electricity": l10n.electricity,
+    };
+
     return Scaffold(
       appBar: AppBar(title: Text("新增我的最愛")),
       body: Padding(
@@ -106,29 +101,31 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: "選擇縣市"),
               value: selectedCity,
-              items: [context.l10n.entire_country,
-                context.l10n.taipei_city,
-                context.l10n.new_taipei_city,
-                context.l10n.taoyuan_city,
-                context.l10n.taizhong_city,
-                context.l10n.tainan_city,
-                context.l10n.kaohsiung_city,
-                context.l10n.hsinchu_city,
-                context.l10n.hsinchu_county,
-                context.l10n.miaoli_county,
-                context.l10n.changhua_county,
-                context.l10n.nantou_county,
-                context.l10n.yunlin_county,
-                context.l10n.chiayi_city,
-                context.l10n.chiayi_county,
-                context.l10n.pingtung_county,
-                context.l10n.yilan_county,
-                context.l10n.hualien_county,
-                context.l10n.taitung_city,
-                context.l10n.penghu_county,
-                context.l10n.kinmen_county,
-                context.l10n.lienchiang_county,
-                context.l10n.keelung_city]
+              items: [
+                l10n.entire_country,
+                l10n.taipei_city,
+                l10n.new_taipei_city,
+                l10n.taoyuan_city,
+                l10n.taizhong_city,
+                l10n.tainan_city,
+                l10n.kaohsiung_city,
+                l10n.hsinchu_city,
+                l10n.hsinchu_county,
+                l10n.miaoli_county,
+                l10n.changhua_county,
+                l10n.nantou_county,
+                l10n.yunlin_county,
+                l10n.chiayi_city,
+                l10n.chiayi_county,
+                l10n.pingtung_county,
+                l10n.yilan_county,
+                l10n.hualien_county,
+                l10n.taitung_city,
+                l10n.penghu_county,
+                l10n.kinmen_county,
+                l10n.lienchiang_county,
+                l10n.keelung_city,
+              ]
                   .map((city) => DropdownMenuItem(
                 value: city,
                 child: Text(city),
@@ -141,10 +138,13 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
               },
             ),
             SizedBox(height: 16.0),
-            Text("選擇產業", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+            Text(
+              "選擇產業",
+              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+            ),
             ...industries.map((industry) {
               return CheckboxListTile(
-                title: Text(industry),
+                title: Text(industryTranslations[industry]!),
                 value: selectedIndustries.contains(industry),
                 onChanged: (bool? value) {
                   setState(() {
