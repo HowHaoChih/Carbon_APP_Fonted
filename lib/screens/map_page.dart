@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:carbon_app/widgets/department_legend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -10,7 +11,7 @@ import '../utils/department_utils.dart';
 import '../widgets/color_legend.dart';
 import '../widgets/map_slider.dart';
 import '../widgets/department_pie_chart.dart';
-import '../widgets/stacked_bar_and_line_chart.dart';
+import '../widgets/monthly_stacked_bar_and_line_chart.dart';
 
 class TaiwanMapScreen extends StatefulWidget {
   const TaiwanMapScreen({super.key});
@@ -25,6 +26,8 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
   final Map<String, double> countyEmissions = {};
   int selectedYear = 2023;
   int selectedMonth = 1;
+  // 所有產業選項
+  final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
   void initState() {
@@ -73,7 +76,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
         for (var polygon in coordinates) {
           final points = GeoJsonUtils.convertCoordinates(polygon[0]);
           tempPolygons.putIfAbsent(name, () => []).add(PolygonData(
-              name: name == "桃園縣" ? "桃園市" : (name == "台東縣" ? "台東縣" : name),
+              name: name == "桃園縣" ? "桃園市" : name,
               points: points,
               color: color,
               emission: emission));
@@ -81,7 +84,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       } else if (feature['geometry']['type'] == 'Polygon') {
         final points = GeoJsonUtils.convertCoordinates(coordinates[0]);
         tempPolygons.putIfAbsent(name, () => []).add(PolygonData(
-            name: name == "桃園縣" ? "桃園市" : (name == "台東縣" ? "台東縣" : name),
+            name: name == "桃園縣" ? "桃園市" : name,
             points: points,
             color: color,
             emission: emission));
@@ -136,7 +139,8 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       "雲林縣": context.l10n.yunlin_county,
     };
 
-    return mapping[countyName] ?? countyName; // If not found, return original name
+    return mapping[countyName] ??
+        countyName; // If not found, return original name
   }
 
   Marker _buildCityMarker(LatLng position, String name) {
@@ -171,23 +175,90 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
           isScrollControlled: true,
           builder: (context) {
             final localizedName = getLocalizedCountyName(context, polygon.name);
-            return AlertDialog(
-              title: Text('$localizedName - $selectedYear/$selectedMonth'),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: DepartmentPieChart(
-                  year: selectedYear,
-                  city: localizedName, // PieChart itself may need further localization if needed
-                  month: selectedMonth,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  child: Column(
+                    children: [
+                      // 標題
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          '$localizedName - $selectedYear/$selectedMonth',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: selectedChart == 0
+                            ? SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.8,
+                                child: Column(
+                                  children: [
+                                    DepartmentPieChart(
+                                      year: selectedYear,
+                                      city: localizedName,
+                                      month: selectedMonth,
+                                    ),
+                                    DepartmentLegend(
+                                      departmentList: allDepartments,
+                                    )
+                                  ],
+                                ),
+                              )
+                            : SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.8,
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3, // 上方圖表佔 3 份空間
+                                      child: MonthlyStackedBarAndLineChart(
+                                        city: localizedName,
+                                        selectedDepartments:
+                                            allDepartments.toSet(),
+                                        selectedYear: selectedYear,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1, // 下方 Legend 佔 1 份空間
+                                      child: DepartmentLegend(
+                                        departmentList: allDepartments,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                      ),
+                      // BottomNavigationBar
+                      BottomNavigationBar(
+                        currentIndex: selectedChart,
+                        onTap: (index) {
+                          setModalState(() {
+                            selectedChart = index; // 切換圖表類型
+                          });
+                        },
+                        items: [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.pie_chart),
+                            label: context.l10n.pie_chart,
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.bar_chart),
+                            label: context.l10n.bar_chart,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             );
           },
         );

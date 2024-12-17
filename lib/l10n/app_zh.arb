@@ -25,6 +25,8 @@
     "month": "月份:",
     "carbon": "碳強度 (10ktonCO₂e)",
     "map_view": "台灣碳排放熱點圖",
+    "pie_chart": "圓餅圖",
+    "bar_chart": "柱狀圖",
     "entire_country": "全國",
     "nantou_county": "南投縣",
     "taizhong_city": "台中市",
