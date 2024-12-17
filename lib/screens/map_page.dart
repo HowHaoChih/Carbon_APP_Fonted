@@ -6,9 +6,11 @@ import 'package:latlong2/latlong.dart';
 import '../l10n/l10n.dart';
 import '../utils/geojson_utils.dart';
 import '../utils/polygon_data.dart';
+import '../utils/department_utils.dart';
 import '../widgets/color_legend.dart';
 import '../widgets/map_slider.dart';
 import '../widgets/department_pie_chart.dart';
+import '../widgets/stacked_bar_and_line_chart.dart';
 
 class TaiwanMapScreen extends StatefulWidget {
   const TaiwanMapScreen({super.key});
@@ -71,12 +73,18 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
         for (var polygon in coordinates) {
           final points = GeoJsonUtils.convertCoordinates(polygon[0]);
           tempPolygons.putIfAbsent(name, () => []).add(PolygonData(
-              name: name, points: points, color: color, emission: emission));
+              name: name == "桃園縣" ? "桃園市" : (name == "台東縣" ? "台東縣" : name),
+              points: points,
+              color: color,
+              emission: emission));
         }
       } else if (feature['geometry']['type'] == 'Polygon') {
         final points = GeoJsonUtils.convertCoordinates(coordinates[0]);
         tempPolygons.putIfAbsent(name, () => []).add(PolygonData(
-            name: name, points: points, color: color, emission: emission));
+            name: name == "桃園縣" ? "桃園市" : (name == "台東縣" ? "台東縣" : name),
+            points: points,
+            color: color,
+            emission: emission));
       }
     }
 
@@ -91,7 +99,8 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       loadedPolygons.addAll(polygonList);
 
       final center = GeoJsonUtils.calculateCenter(largestPolygon.points);
-      loadedMarkers.add(_buildCityMarker(center, name));
+      loadedMarkers.add(_buildCityMarker(
+          center, name == "桃園縣" ? "桃園市" : (name == "台東縣" ? "台東縣" : name)));
     });
 
     setState(() {
@@ -120,29 +129,81 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
     );
   }
 
-void _handleMapTap(LatLng point) {
+  void _handleMapTap(LatLng point) {
+    final List<String> allDepartments = DepartmentUtils.getAllDepartments();
+
     for (var polygon in polygons) {
       if (GeoJsonUtils.isPointInPolygon(point, polygon.points)) {
-        showDialog(
+        int selectedChart = 0; // 0: PieChart, 1: StackedBarChart
+
+        showModalBottomSheet(
           context: context,
+          isScrollControlled: true,
           builder: (context) {
-            return AlertDialog(
-              title: Text('${polygon.name} - $selectedYear/$selectedMonth'),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: DepartmentPieChart(
-                  year: selectedYear,
-                  city: polygon.name,
-                  month: selectedMonth,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  child: Column(
+                    children: [
+                      // 標題
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          '${polygon.name} - $selectedYear/$selectedMonth',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: selectedChart == 0
+                            ? SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
+                                child: DepartmentPieChart(
+                                  year: selectedYear,
+                                  city: polygon.name,
+                                  month: selectedMonth,
+                                ),
+                              )
+                            : SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
+                                child: StackedBarAndLineChart(
+                                  city: polygon.name,
+                                  selectedDepartments: allDepartments.toSet(),
+                                  // isMonthlyView: true,
+                                  // selectedYear: selectedYear,
+                                ),
+                              ),
+                      ),
+                      // BottomNavigationBar
+                      BottomNavigationBar(
+                        currentIndex: selectedChart,
+                        onTap: (index) {
+                          setModalState(() {
+                            selectedChart = index; // 切換圖表類型
+                          });
+                        },
+                        items: const [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.pie_chart),
+                            label: 'Pie Chart',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.bar_chart),
+                            label: 'Stacked Chart',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             );
           },
         );
@@ -150,8 +211,6 @@ void _handleMapTap(LatLng point) {
       }
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
