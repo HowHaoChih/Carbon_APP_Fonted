@@ -53,7 +53,7 @@ class _DepartmentPieChartViewScreenState
       context.l10n.pingtung_county,
       context.l10n.yilan_county,
       context.l10n.hualien_county,
-      context.l10n.taitung_city,
+      context.l10n.taitung_county,
       context.l10n.penghu_county,
       context.l10n.kinmen_county,
       context.l10n.lienchiang_county,
