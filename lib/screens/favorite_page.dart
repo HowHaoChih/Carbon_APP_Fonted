@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'add_favorite.dart'; // 引入 AddFavoritePage
+import 'add_favorite.dart';
+import 'industry_page.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -12,12 +13,11 @@ class FavoriteScreen extends StatefulWidget {
 }
 
 class _FavoriteScreenState extends State<FavoriteScreen> {
-  List<dynamic> favorites = [];
+  List<Map<String, dynamic>> favorites = [];
 
   Future<File> _getFavoriteFile() async {
     final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/favorite.json';
-    return File(filePath);
+    return File('${directory.path}/favorite.json');
   }
 
   Future<void> loadFavorites() async {
@@ -27,18 +27,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         final content = await file.readAsString();
         final List<dynamic> data = content.isNotEmpty ? jsonDecode(content) : [];
         setState(() {
-          favorites = data;
-        });
-      } else {
-        setState(() {
-          favorites = [];
+          favorites = List<Map<String, dynamic>>.from(data);
         });
       }
     } catch (e) {
       print("讀取失敗: $e");
-      setState(() {
-        favorites = [];
-      });
+      setState(() => favorites = []);
+      final file = await _getFavoriteFile();
+      await file.writeAsString(jsonEncode([]));
+      print("已創建 favorite.json 文件");
     }
   }
 
@@ -77,31 +74,34 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               onTap: () {
                 showDialog(
                   context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text("操作選項"),
-                      content: Text("請選擇操作："),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context); // 關閉彈窗
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => AddFavoritePage()),
-                            );
-                          },
-                          child: Text("跳轉到頁面"),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context); // 關閉彈窗
-                            await deleteFavorite(index);
-                          },
-                          child: Text("刪除"),
-                        ),
-                      ],
-                    );
-                  },
+                  builder: (context) => AlertDialog(
+                    title: Text("選擇操作"),
+                    content: Text("請選擇要執行的操作"),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => IndustryViewScreen(
+                                initialCity: favorite['縣市'],
+                                initialIndustries: List<String>.from(favorite['產業']),
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text("跳轉至指定頁面"),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await deleteFavorite(index);
+                        },
+                        child: Text("刪除最愛"),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -114,7 +114,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             context,
             MaterialPageRoute(builder: (context) => AddFavoritePage()),
           );
-          loadFavorites(); // 回到此頁面時重新加載資料
+          loadFavorites();
         },
         tooltip: "新增我的最愛",
         child: const Icon(Icons.add),

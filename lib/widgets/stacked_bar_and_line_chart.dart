@@ -92,10 +92,12 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
     // 解析每個部門的數據
     for (final department in allDepartments) {
       final data = allDataFiles[department]; // 對應部門的數據
-      departmentData[department] = List<double>.filled(yearRange.length, 0); // 初始化數據列表
+      departmentData[department] =
+          List<double>.filled(yearRange.length, 0); // 初始化數據列表
       if (data != null) {
         final rows = const LineSplitter().convert(data); // 分割 CSV 行
-        for (var i = 1; i < rows.length; i++) { // 跳過標題行
+        for (var i = 1; i < rows.length; i++) {
+          // 跳過標題行
           final row = rows[i].split(','); // 分割每行的數據
           final year = int.parse(row[0]); // 讀取年份
           final value = double.parse(row[cityIndex]); // 對應城市的值
@@ -124,7 +126,10 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
         final stackItem = BarChartRodStackItem(
           stackBottom,
           stackBottom + value, // 新的高度
-          DepartmentUtils.getDepartmentColor(department, isDarkMode: Theme.of(context).brightness == Brightness.dark,), // 部門顏色
+          DepartmentUtils.getDepartmentColor(
+            department,
+            isDarkMode: Theme.of(context).brightness == Brightness.dark,
+          ), // 部門顏色
         );
         stackBottom += value; // 更新基底高度
         return stackItem;
@@ -170,7 +175,8 @@ class _StackedBarAndLineChartState extends State<StackedBarAndLineChart> {
       return value.ceilToDouble(); // 小於 10 直接取整
     }
 
-    final int magnitude = pow(10, value.toInt().toString().length - 2).toInt(); // 計算數量級
+    final int magnitude =
+        pow(10, value.toInt().toString().length - 2).toInt(); // 計算數量級
 
     final double roundedValue =
         (value / magnitude).ceil() * magnitude.toDouble();
