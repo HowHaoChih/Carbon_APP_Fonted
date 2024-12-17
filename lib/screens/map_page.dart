@@ -7,6 +7,7 @@ import '../l10n/l10n.dart';
 import '../utils/geojson_utils.dart';
 import '../utils/polygon_data.dart';
 import '../widgets/color_legend.dart';
+import '../widgets/map_slider.dart';
 
 class TaiwanMapScreen extends StatefulWidget {
   const TaiwanMapScreen({super.key});
@@ -29,6 +30,11 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
   }
 
   Future<void> _loadData() async {
+    await _loadEmissionData();
+    await _loadGeoJson();
+  }
+
+  Future<void> _loadEmissionData() async {
     // 加載碳排放數據
     final String csvData = await rootBundle.loadString(
         'assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
@@ -45,7 +51,6 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
         break;
       }
     }
-    _loadGeoJson();
   }
 
   Future<void> _loadGeoJson() async {
@@ -59,8 +64,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       final name = feature['properties']['COUNTYNAME'];
       final coordinates = feature['geometry']['coordinates'];
       final emission = countyEmissions[name] ?? 0.0;
-
-      Color color = _getFillColor(emission);
+      Color color = GeoJsonUtils.getFillColor(emission);
 
       if (feature['geometry']['type'] == 'MultiPolygon') {
         for (var polygon in coordinates) {
@@ -78,17 +82,14 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
     final List<PolygonData> loadedPolygons = [];
     final List<Marker> loadedMarkers = [];
 
-    // 遍歷縣市，選取每個縣市的最大區塊
     tempPolygons.forEach((name, polygonList) {
-      polygonList.sort((a, b) => _calculateArea(b.points)
-          .compareTo(_calculateArea(a.points))); // 依面積降序排序
+      polygonList.sort((a, b) => GeoJsonUtils.calculateArea(b.points)
+          .compareTo(GeoJsonUtils.calculateArea(a.points)));
 
-      // 取最大區塊
       final largestPolygon = polygonList.first;
       loadedPolygons.addAll(polygonList);
 
-      // 計算最大區塊的中心點並建立 Marker
-      final center = _calculateCenter(largestPolygon.points);
+      final center = GeoJsonUtils.calculateCenter(largestPolygon.points);
       loadedMarkers.add(_buildCityMarker(center, name));
     });
 
@@ -96,29 +97,6 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       polygons = loadedPolygons;
       cityMarkers = loadedMarkers;
     });
-  }
-
-  LatLng _calculateCenter(List<LatLng> points) {
-    // 計算多邊形座標的平均值作為中心點
-    double sumLat = 0.0;
-    double sumLng = 0.0;
-
-    for (var point in points) {
-      sumLat += point.latitude;
-      sumLng += point.longitude;
-    }
-
-    return LatLng(sumLat / points.length, sumLng / points.length);
-  }
-
-  double _calculateArea(List<LatLng> points) {
-    double area = 0.0;
-    for (int i = 0; i < points.length; i++) {
-      final p1 = points[i];
-      final p2 = points[(i + 1) % points.length];
-      area += (p1.longitude * p2.latitude) - (p2.longitude * p1.latitude);
-    }
-    return (area.abs() / 2.0);
   }
 
   Marker _buildCityMarker(LatLng position, String name) {
@@ -141,41 +119,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
     );
   }
 
-  Color _getFillColor(double emission) {
-    const List<Color> gradientColors = [
-      Color(0xFF00FF00), // 綠色
-      Color(0xFFFFFF00), // 黃色
-      Color(0xFFFFA500), // 橘色
-      Color(0xFFFF4500), // 深橘色
-      Color(0xFFFF0000), // 紅色
-      Color(0xFF8B0000), // 深紅色
-      Color(0xFF000000), // 黑色
-    ];
-
-    double normalized;
-
-    if (emission <= 100) {
-      // 前 100 使用平方根映射，加強漸變效果
-      normalized = (emission / 100.0).clamp(0.0, 1.0);
-      normalized = normalized * normalized; // 平方根後加強過渡
-      normalized *= 0.5; // 壓縮至漸變的前 50%
-    } else {
-      // 100 ~ 500 線性映射，平滑過渡
-      normalized = ((emission - 100) / 400.0).clamp(0.0, 1.0);
-      normalized = 0.5 + normalized * 0.5; // 將剩餘範圍平滑過渡至 50%
-    }
-
-    int lowerIndex = (normalized * (gradientColors.length - 1)).floor();
-    int upperIndex = (normalized * (gradientColors.length - 1)).ceil();
-    double t = (normalized * (gradientColors.length - 1)) - lowerIndex;
-
-    return Color.lerp(
-            gradientColors[lowerIndex], gradientColors[upperIndex], t)!
-        .withOpacity(0.6);
-  }
-
   void _handleMapTap(LatLng point) {
-    // 處理點擊地圖事件
     for (var polygon in polygons) {
       if (GeoJsonUtils.isPointInPolygon(point, polygon.points)) {
         showDialog(
@@ -207,53 +151,43 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
         children: [
           Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    const Text('Year:'),
-                    Expanded(
-                      child: Slider(
-                        value: selectedYear.toDouble(),
-                        min: 1990,
-                        max: 2023,
-                        divisions: 33,
-                        label: selectedYear.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedYear = value.toInt();
-                            _loadData();
-                          });
-                        },
-                      ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: MapSlider(
+                      label: 'Year:',
+                      value: selectedYear.toDouble(),
+                      min: 1990,
+                      max: 2023,
+                      divisions: 33,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedYear = value.toInt();
+                          _loadData();
+                        });
+                      },
                     ),
-                    SizedBox(
-                      width: 40,
-                      child: Text('$selectedYear', textAlign: TextAlign.center),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: MapSlider(
+                      label: 'Month:',
+                      value: selectedMonth.toDouble(),
+                      min: 1,
+                      max: 12,
+                      divisions: 12,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedMonth = value.toInt();
+                          _loadData();
+                        });
+                      },
+                      width: 20, // 自定義寬度
                     ),
-                    const Text('Month:'),
-                    Expanded(
-                      child: Slider(
-                        value: selectedMonth.toDouble(),
-                        min: 1,
-                        max: 12,
-                        divisions: 12,
-                        label: selectedMonth.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedMonth = value.toInt();
-                            _loadData();
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: 40,
-                      child:
-                          Text('$selectedMonth', textAlign: TextAlign.center),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               Expanded(
                 child: FlutterMap(

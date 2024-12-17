@@ -13,8 +13,12 @@ class DepartmentLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> legendItems = departmentList.map((departmentKey) {
-      final color = DepartmentUtils.getDepartmentColor(departmentKey, isDarkMode: Theme.of(context).brightness == Brightness.dark,);
-      final departmentName = DepartmentUtils.getDepartmentName(context, departmentKey);
+      final color = DepartmentUtils.getDepartmentColor(
+        departmentKey,
+        isDarkMode: Theme.of(context).brightness == Brightness.dark,
+      );
+      final departmentName =
+          DepartmentUtils.getDepartmentName(context, departmentKey);
       return Row(
         mainAxisAlignment: MainAxisAlignment.center, // 內容置中
         children: [
@@ -44,7 +48,9 @@ class DepartmentLegend extends StatelessWidget {
     for (int i = 0; i < legendItems.length; i += itemsPerRow) {
       rows.add(legendItems.sublist(
         i,
-        i + itemsPerRow > legendItems.length ? legendItems.length : i + itemsPerRow,
+        i + itemsPerRow > legendItems.length
+            ? legendItems.length
+            : i + itemsPerRow,
       ));
     }
 
