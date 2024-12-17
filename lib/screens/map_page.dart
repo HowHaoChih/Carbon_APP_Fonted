@@ -4,6 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../l10n/l10n.dart';
+import '../utils/geojson_utils.dart';
+import '../utils/polygon_data.dart';
+import '../widgets/color_legend.dart';
+import '../widgets/map_slider.dart';
+import '../widgets/department_pie_chart.dart';
 
 class TaiwanMapScreen extends StatefulWidget {
   const TaiwanMapScreen({super.key});
@@ -13,7 +18,8 @@ class TaiwanMapScreen extends StatefulWidget {
 }
 
 class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
-  List<Polygon> polygons = [];
+  List<PolygonData> polygons = [];
+  List<Marker> cityMarkers = [];
   final Map<String, double> countyEmissions = {};
   int selectedYear = 2023;
   int selectedMonth = 1;
@@ -21,229 +27,233 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
   @override
   void initState() {
     super.initState();
-    _loadGeoJson();
     _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadEmissionData();
+    await _loadGeoJson();
+  }
+
+  Future<void> _loadEmissionData() async {
+    // 加載碳排放數據
+    final String csvData = await rootBundle.loadString(
+        'assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
+    final rows = const LineSplitter().convert(csvData);
+    final headers = rows.first.split(',');
+
+    for (var row in rows.skip(1)) {
+      final values = row.split(',');
+      if (int.parse(values[0]) == selectedYear &&
+          int.parse(values[1]) == selectedMonth) {
+        for (var i = 3; i < values.length; i++) {
+          countyEmissions[headers[i]] = double.parse(values[i]);
+        }
+        break;
+      }
+    }
   }
 
   Future<void> _loadGeoJson() async {
     final String geoJsonData =
         await rootBundle.loadString('assets/data/twCounty2010merge.geo.json');
-    final Map<String, dynamic> jsonMap = jsonDecode(geoJsonData);
+    final jsonMap = jsonDecode(geoJsonData);
 
-    List<Polygon> loadedPolygons = [];
+    final Map<String, List<PolygonData>> tempPolygons = {};
 
     for (var feature in jsonMap['features']) {
-      final String countyName = feature['properties']['COUNTYNAME'];
-      final List coordinates = feature['geometry']['coordinates'];
-      final double emission = countyEmissions[countyName] ?? 0.0;
-
-      final Color fillColor = _getFillColor(emission);
+      final name = feature['properties']['COUNTYNAME'];
+      final coordinates = feature['geometry']['coordinates'];
+      final emission = countyEmissions[name] ?? 0.0;
+      Color color = GeoJsonUtils.getFillColor(emission);
 
       if (feature['geometry']['type'] == 'MultiPolygon') {
         for (var polygon in coordinates) {
-          loadedPolygons.add(
-            Polygon(
-              points: _convertCoordinates(polygon[0]),
-              color: fillColor,
-              borderStrokeWidth: 1.0,
-              borderColor: Colors.black,
-            ),
-          );
+          final points = GeoJsonUtils.convertCoordinates(polygon[0]);
+          tempPolygons.putIfAbsent(name, () => []).add(PolygonData(
+              name: name, points: points, color: color, emission: emission));
         }
       } else if (feature['geometry']['type'] == 'Polygon') {
-        loadedPolygons.add(
-          Polygon(
-            points: _convertCoordinates(coordinates[0]),
-            color: fillColor,
-            borderStrokeWidth: 1.0,
-            borderColor: Colors.black,
-          ),
-        );
+        final points = GeoJsonUtils.convertCoordinates(coordinates[0]);
+        tempPolygons.putIfAbsent(name, () => []).add(PolygonData(
+            name: name, points: points, color: color, emission: emission));
       }
     }
+
+    final List<PolygonData> loadedPolygons = [];
+    final List<Marker> loadedMarkers = [];
+
+    tempPolygons.forEach((name, polygonList) {
+      polygonList.sort((a, b) => GeoJsonUtils.calculateArea(b.points)
+          .compareTo(GeoJsonUtils.calculateArea(a.points)));
+
+      final largestPolygon = polygonList.first;
+      loadedPolygons.addAll(polygonList);
+
+      final center = GeoJsonUtils.calculateCenter(largestPolygon.points);
+      loadedMarkers.add(_buildCityMarker(center, name));
+    });
 
     setState(() {
       polygons = loadedPolygons;
+      cityMarkers = loadedMarkers;
     });
   }
 
-  Future<void> _loadData() async {
-    final String csvData = await rootBundle.loadString(
-        'assets/data/TotalCarbonEmissions_AllSectors_10ktonCO2e.csv');
-    final rows = const LineSplitter().convert(csvData);
+  // Helper function to map county name to localized value
+  String getLocalizedCountyName(BuildContext context, String countyName) {
+    final mapping = {
+      "台北市": context.l10n.taipei_city,
+      "台中市": context.l10n.taizhong_city,
+      "高雄市": context.l10n.kaohsiung_city,
+      "南投縣": context.l10n.nantou_county,
+      "新北市": context.l10n.new_taipei_city,
+      "台南市": context.l10n.tainan_city,
+      "台東市": context.l10n.taitung_city,
+      "嘉義市": context.l10n.chiayi_city,
+      "嘉義縣": context.l10n.chiayi_county,
+      "基隆市": context.l10n.keelung_city,
+      "宜蘭縣": context.l10n.yilan_county,
+      "屏東縣": context.l10n.pingtung_county,
+      "彰化縣": context.l10n.changhua_county,
+      "新竹市": context.l10n.hsinchu_city,
+      "新竹縣": context.l10n.hsinchu_county,
+      "桃園市": context.l10n.taoyuan_city,
+      "澎湖縣": context.l10n.penghu_county,
+      "花蓮縣": context.l10n.hualien_county,
+      "苗栗縣": context.l10n.miaoli_county,
+      "連江縣": context.l10n.lienchiang_county,
+      "金門縣": context.l10n.kinmen_county,
+      "雲林縣": context.l10n.yunlin_county,
+    };
 
-    final headers = rows.first.split(',');
-    final int monthIndex = 1;
-    final countyNames = headers.sublist(3); // 縣市名稱
+    return mapping[countyName] ?? countyName; // If not found, return original name
+  }
 
-    for (var i = 1; i < rows.length; i++) {
-      final row = rows[i].split(',');
-      final int year = int.parse(row[0]);
-      final int month = int.parse(row[monthIndex]);
+  Marker _buildCityMarker(LatLng position, String name) {
+    final localizedName = getLocalizedCountyName(context, name);
 
-      if (year == selectedYear && month == selectedMonth) {
-        for (var j = 3; j < row.length; j++) {
-          countyEmissions[countyNames[j - 3]] = double.parse(row[j]);
-        }
+    return Marker(
+      point: position,
+      width: 100,
+      height: 30,
+      child: Center(
+        child: Text(
+          localizedName,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            backgroundColor: Colors.white54,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  void _handleMapTap(LatLng point) {
+    for (var polygon in polygons) {
+      if (GeoJsonUtils.isPointInPolygon(point, polygon.points)) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            final localizedName = getLocalizedCountyName(context, polygon.name);
+            return AlertDialog(
+              title: Text('$localizedName - $selectedYear/$selectedMonth'),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: DepartmentPieChart(
+                  year: selectedYear,
+                  city: localizedName, // PieChart itself may need further localization if needed
+                  month: selectedMonth,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
         break;
       }
     }
-
-    _loadGeoJson();
-  }
-
-  Color _getFillColor(double emission) {
-    const double maxEmission = 500.0; // 最大值設為500
-    const List<Color> gradientColors = [
-      Color(0xFF00FF00), // 綠色 (最低排放)
-      Color(0xFFFFFF00), // 黃色
-      Color(0xFFFFA500), // 橘色
-      Color(0xFFFF4500), // 深橘色
-      Color(0xFFFF0000), // 紅色
-      Color(0xFF8B0000), // 深紅色
-      Color(0xFF000000), // 黑色 (最高排放)
-    ];
-
-    double normalized;
-    if (emission <= 100) {
-      normalized = (emission / 100).clamp(0.0, 1.0);
-      normalized = normalized * normalized;
-      normalized *= 0.5;
-    } else {
-      normalized = ((emission - 100) / (maxEmission - 100)).clamp(0.0, 1.0);
-      normalized = 0.5 + normalized * 0.5;
-    }
-
-    int lowerIndex = (normalized * (gradientColors.length - 1)).floor();
-    int upperIndex = (normalized * (gradientColors.length - 1)).ceil();
-    double t = (normalized * (gradientColors.length - 1)) - lowerIndex;
-
-    Color lowerColor = gradientColors[lowerIndex];
-    Color upperColor = gradientColors[upperIndex];
-    return Color.lerp(lowerColor, upperColor, t)!.withOpacity(0.6);
-  }
-
-  List<LatLng> _convertCoordinates(List coordinates) {
-    return coordinates.map<LatLng>((coord) {
-      return LatLng(coord[1], coord[0]);
-    }).toList();
-  }
-
-  Widget _buildColorLegend(BuildContext context) {
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            context.l10n.carbon,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            height: 16,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF00FF00),
-                  Color(0xFFFFFF00),
-                  Color(0xFFFFA500),
-                  Color(0xFFFF4500),
-                  Color(0xFFFF0000),
-                  Color(0xFF8B0000),
-                  Color(0xFF000000),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('0', style: TextStyle(fontSize: 10)),
-              Text('100', style: TextStyle(fontSize: 10)),
-              Text('200', style: TextStyle(fontSize: 10)),
-              Text('300', style: TextStyle(fontSize: 10)),
-              Text('400', style: TextStyle(fontSize: 10)),
-              Text('500+', style: TextStyle(fontSize: 10)),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.map_view),
-      ),
+      appBar: AppBar(title: Text(context.l10n.map_view)),
       body: Stack(
         children: [
           Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    // 年份滑桿
-                    Text(context.l10n.year),
-                    Expanded(
-                      child: Slider(
-                        value: selectedYear.toDouble(),
-                        min: 1990,
-                        max: 2023,
-                        divisions: 33,
-                        label: selectedYear.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedYear = value.toInt();
-                            _loadData();
-                          });
-                        },
-                      ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: MapSlider(
+                      label: context.l10n.year,
+                      value: selectedYear.toDouble(),
+                      min: 1990,
+                      max: 2023,
+                      divisions: 33,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedYear = value.toInt();
+                          _loadData();
+                        });
+                      },
                     ),
-                    Text('$selectedYear '), // 顯示當前年份
-                    Text(context.l10n.month),
-                    Expanded(
-                      child: Slider(
-                        value: selectedMonth.toDouble(),
-                        min: 1,
-                        max: 12,
-                        divisions: 12,
-                        label: selectedMonth.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedMonth = value.toInt();
-                            _loadData();
-                          });
-                        },
-                      ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: MapSlider(
+                      label: context.l10n.month,
+                      value: selectedMonth.toDouble(),
+                      min: 1,
+                      max: 12,
+                      divisions: 12,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedMonth = value.toInt();
+                          _loadData();
+                        });
+                      },
                     ),
-                    Text('$selectedMonth '), // 顯示當前月份
-                  ],
-                ),
+                  ),
+                ],
               ),
               Expanded(
                 child: FlutterMap(
                   options: MapOptions(
                     initialCenter: LatLng(23.5, 121.0),
                     initialZoom: 7.0,
+                    onTap: (TapPosition tapPosition, LatLng point) {
+                      _handleMapTap(point);
+                    },
                   ),
                   children: [
                     TileLayer(
                       urlTemplate:
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     ),
-                    PolygonLayer(polygons: polygons),
+                    PolygonLayer(
+                      polygons: polygons
+                          .map((p) => Polygon(
+                                points: p.points,
+                                color: p.color.withOpacity(0.6),
+                                borderColor: Colors.black,
+                                borderStrokeWidth: 1.0,
+                              ))
+                          .toList(),
+                    ),
+                    MarkerLayer(markers: cityMarkers),
                   ],
                 ),
               ),
@@ -252,7 +262,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
           Positioned(
             right: 16,
             bottom: 16,
-            child: _buildColorLegend(context),
+            child: const ColorLegend(),
           ),
         ],
       ),

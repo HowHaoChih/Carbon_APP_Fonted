@@ -180,7 +180,7 @@ class _MainScreenState extends State<MainScreen> {
                 title: Text(context.l10n.about),
                 onTap: () {
                   setState(() {
-                    _currentIndex = 2; // 切換到設定頁
+                    _currentIndex = 0; // 切換到設定頁
                   });
                   Navigator.pop(context); // 關閉 Drawer
                 },

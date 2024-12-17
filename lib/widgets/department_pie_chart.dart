@@ -1,17 +1,21 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
 import '../utils/department_utils.dart';
 import '../utils/city_utils.dart';
-import 'dart:convert';
 
 class DepartmentPieChart extends StatefulWidget {
   final int year;
   final String city;
+  final int? month;
+  final String? title; // 新增可選標題
 
   const DepartmentPieChart({
     required this.year,
     required this.city,
+    this.month,
+    this.title, // 默認為 null
     super.key,
   });
 
@@ -21,7 +25,6 @@ class DepartmentPieChart extends StatefulWidget {
 
 class _DepartmentPieChartState extends State<DepartmentPieChart> {
   Map<String, double> departmentData = {};
-
   final List<String> allDepartments = DepartmentUtils.getAllDepartments();
 
   @override
@@ -31,34 +34,25 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
   }
 
   void _loadData() async {
-    departmentData = {}; // 清空舊資料
+    departmentData = {};
     setState(() {});
-    final residentialData = await rootBundle.loadString(
-        'assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv');
-    final servicesData = await rootBundle.loadString(
-        'assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv');
-    final energyData = await rootBundle
-        .loadString('assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv');
-    final manufacturingData = await rootBundle.loadString(
-        'assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv');
-    final transportationData = await rootBundle.loadString(
-        'assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv');
-    final electricityData = await rootBundle
-        .loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv');
-
     final allDataFiles = {
-      "Residential": residentialData,
-      "Services": servicesData,
-      "Energy": energyData,
-      "Manufacturing": manufacturingData,
-      "Transportation": transportationData,
-      "Electricity": electricityData,
+      "Residential": await rootBundle.loadString(
+          'assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv'),
+      "Services": await rootBundle.loadString(
+          'assets/data/ServiceIndustry_CarbonEmissions_10ktonCO2e.csv'),
+      "Energy": await rootBundle.loadString(
+          'assets/data/EnergySector_CarbonEmissions_10ktonCO2e.csv'),
+      "Manufacturing": await rootBundle.loadString(
+          'assets/data/ManufacturingAndConstruction_CarbonEmissions_10ktonCO2e.csv'),
+      "Transportation": await rootBundle.loadString(
+          'assets/data/TransportationSector_CarbonEmissions_10ktonCO2e.csv'),
+      "Electricity": await rootBundle
+          .loadString('assets/data/Electricity_CarbonEmissions_10ktonCO2e.csv'),
     };
 
-    departmentData = {};
     double totalDepartmentValue = 0;
 
-    // 解析每個部門的資料
     for (final department in allDepartments) {
       final data = allDataFiles[department];
       if (data != null) {
@@ -66,48 +60,52 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         for (var i = 1; i < rows.length; i++) {
           final row = rows[i].split(',');
           final year = int.parse(row[0]);
+          final month = row.length > 1 ? int.parse(row[1]) : null;
           final cityIndex = CityUtils.getCityIndex(widget.city, context);
-          final value = double.parse(row[cityIndex]); // 根據選定的城市取值
-          if (year == widget.year) {
-            departmentData[department] = value;
+          final value = double.parse(row[cityIndex]);
+
+          if (year == widget.year &&
+              (widget.month == null || month == widget.month)) {
+            departmentData.update(department, (v) => v + value,
+                ifAbsent: () => value);
             totalDepartmentValue += value;
-            break;
           }
         }
       }
     }
-    for (final department in allDepartments) {
-      final value = departmentData[department]!;
-      departmentData[department] = value / totalDepartmentValue * 100;
-    }
-    setState(() {});
-  }
 
-  @override
-  void didUpdateWidget(DepartmentPieChart oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.year != widget.year || oldWidget.city != widget.city) {
-      _loadData();
+    for (final department in departmentData.keys) {
+      final value = departmentData[department]!;
+      departmentData[department] = (value / totalDepartmentValue) * 100;
     }
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    // 其他部件的總高度（根據之前計算得出）
-    const double otherComponentsHeight = 270.0; // 包括 AppBar、高度和其他間距
-    final double availableHeight =
-        size.height - otherComponentsHeight; // 剩餘可用高度
+    const double otherComponentsHeight = 270.0;
+    final double availableHeight = size.height - otherComponentsHeight;
     final double maxDimension =
         availableHeight < size.width ? availableHeight : size.width;
-
-    final double radius = maxDimension * 0.3; // 將 radius 限制為可用尺寸的 30%
-    final double pieChartSize = maxDimension * 0.8; // 圖表寬高限制為可用尺寸的 80%
+    final double radius = maxDimension * 0.3;
+    final double pieChartSize = maxDimension * 0.8;
 
     return SingleChildScrollView(
       child: Column(
         children: [
+          if (widget.title != null) ...[
+            Text(
+              widget.title!,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -118,8 +116,8 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
               child: departmentData.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : SizedBox(
-                      width: pieChartSize, // 設定動態寬度
-                      height: pieChartSize, // 設定動態高度
+                      width: pieChartSize,
+                      height: pieChartSize,
                       child: PieChart(
                         PieChartData(
                           sections: _getSections(radius),
@@ -140,12 +138,15 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     return departmentData.entries.map((entry) {
       final departmentKey = entry.key;
       final value = entry.value;
-      final color = DepartmentUtils.getDepartmentColor(departmentKey, isDarkMode: Theme.of(context).brightness == Brightness.dark,);
+      final color = DepartmentUtils.getDepartmentColor(
+        departmentKey,
+        isDarkMode: Theme.of(context).brightness == Brightness.dark,
+      );
       return PieChartSectionData(
         color: color,
         value: value,
         title: '${value.toStringAsFixed(1)}%',
-        radius: radius, // 根據動態計算的 radius 設定
+        radius: radius,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
