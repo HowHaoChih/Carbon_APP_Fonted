@@ -106,7 +106,8 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: "選擇縣市"),
               value: selectedCity,
-              items: [context.l10n.entire_country,
+              items: [
+                context.l10n.entire_country,
                 context.l10n.taipei_city,
                 context.l10n.new_taipei_city,
                 context.l10n.taoyuan_city,
@@ -128,7 +129,8 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
                 context.l10n.penghu_county,
                 context.l10n.kinmen_county,
                 context.l10n.lienchiang_county,
-                context.l10n.keelung_city]
+                context.l10n.keelung_city
+                ]
                   .map((city) => DropdownMenuItem(
                 value: city,
                 child: Text(city),
