@@ -176,11 +176,11 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const Divider(color: Color.fromARGB(135, 169, 169, 169)),
               ListTile(
-                leading: const Icon(Icons.info),
-                title: Text(context.l10n.about),
+                leading: const Icon(Icons.settings),
+                title: Text(context.l10n.settings),
                 onTap: () {
                   setState(() {
-                    _currentIndex = 0; // 切換到設定頁
+                    _currentIndex = 2; // 切換到設定頁
                   });
                   Navigator.pop(context); // 關閉 Drawer
                 },
