@@ -8,6 +8,7 @@ import '../utils/geojson_utils.dart';
 import '../utils/polygon_data.dart';
 import '../widgets/color_legend.dart';
 import '../widgets/map_slider.dart';
+import '../widgets/department_pie_chart.dart';
 
 class TaiwanMapScreen extends StatefulWidget {
   const TaiwanMapScreen({super.key});
@@ -119,20 +120,27 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
     );
   }
 
-  void _handleMapTap(LatLng point) {
+void _handleMapTap(LatLng point) {
     for (var polygon in polygons) {
       if (GeoJsonUtils.isPointInPolygon(point, polygon.points)) {
         showDialog(
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text(polygon.name),
-              content: Text(
-                  'Emission: ${polygon.emission.toStringAsFixed(2)} kton CO₂e'),
+              title: Text('${polygon.name} - $selectedYear/$selectedMonth'),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: DepartmentPieChart(
+                  year: selectedYear,
+                  city: polygon.name,
+                  month: selectedMonth,
+                ),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
+                  child: const Text('Close'),
                 ),
               ],
             );
@@ -142,6 +150,8 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       }
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
