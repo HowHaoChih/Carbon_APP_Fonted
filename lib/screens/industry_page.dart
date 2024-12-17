@@ -5,7 +5,14 @@ import '../utils/city_utils.dart';
 import '../l10n/l10n.dart';
 
 class IndustryViewScreen extends StatefulWidget {
-  const IndustryViewScreen({super.key});
+  final String? initialCity;
+  final List<String>? initialIndustries;
+
+  const IndustryViewScreen({
+    super.key,
+    this.initialCity,
+    this.initialIndustries,
+  });
 
   @override
   State<IndustryViewScreen> createState() => _IndustryViewScreenState();
@@ -17,7 +24,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
 
   // 產業列表
   final List<String> allDepartments = DepartmentUtils.getAllDepartments();
-  
+
   // 縣市列表
   late List<String> cities;
 
@@ -26,7 +33,12 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
     super.didChangeDependencies();
     // 在此時初始化 cities 並設定預設選中的城市
     cities = CityUtils.getCountiesWithNation(context);
-    selectedCity = cities.first; // 預設選中第一個城市
+    selectedCity = widget.initialCity ?? cities.first; // 預設選中第一個城市
+    if (widget.initialIndustries != null) {
+      selectedDepartments = widget.initialIndustries!.toSet();
+    } else {
+      selectedDepartments = allDepartments.toSet();
+    }
   }
 
   // 選中的產業
