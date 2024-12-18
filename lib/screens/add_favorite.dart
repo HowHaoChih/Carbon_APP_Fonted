@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import '../l10n/l10n.dart';
+import '../utils/city_utils.dart';
 
 class AddFavoritePage extends StatefulWidget {
   const AddFavoritePage({super.key});
@@ -55,10 +56,7 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
         return;
       }
 
-      final newFavorite = {
-        "縣市": selectedCity,
-        "產業": selectedIndustries,
-      };
+      final newFavorite = {"縣市": selectedCity, "產業": selectedIndustries};
 
       final file = await _getFavoriteFile();
       List<dynamic> currentFavorites = [];
@@ -76,6 +74,9 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
       print("儲存失敗: $e");
     }
   }
+
+  // 縣市列表
+  late List<String> cities = CityUtils.getCountiesWithNation(context);
 
   @override
   Widget build(BuildContext context) {
@@ -99,49 +100,29 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButtonFormField<String>(
-              decoration: InputDecoration(labelText: "選擇縣市"),
               value: selectedCity,
-              items: [
-                l10n.entire_country,
-                l10n.taipei_city,
-                l10n.new_taipei_city,
-                l10n.taoyuan_city,
-                l10n.taizhong_city,
-                l10n.tainan_city,
-                l10n.kaohsiung_city,
-                l10n.hsinchu_city,
-                l10n.hsinchu_county,
-                l10n.miaoli_county,
-                l10n.changhua_county,
-                l10n.nantou_county,
-                l10n.yunlin_county,
-                l10n.chiayi_city,
-                l10n.chiayi_county,
-                l10n.pingtung_county,
-                l10n.yilan_county,
-                l10n.hualien_county,
-                l10n.taitung_city,
-                l10n.penghu_county,
-                l10n.kinmen_county,
-                l10n.lienchiang_county,
-                l10n.keelung_city,
-              ]
-                  .map((city) => DropdownMenuItem(
-                value: city,
-                child: Text(city),
-              ))
-                  .toList(),
+              items: cities.map((county) {
+                return DropdownMenuItem(
+                  value: county,
+                  child: Text(county),
+                );
+              }).toList(),
               onChanged: (value) {
-                setState(() {
-                  selectedCity = value;
-                });
+                if (value != null) {
+                  setState(() {
+                    selectedCity = value; // 更新選中的縣市
+                  });
+                }
               },
+              decoration: InputDecoration(
+                labelText: context.l10n.select_city,
+                border: OutlineInputBorder(),
+              ),
+              menuMaxHeight: 400, // 設置最大展開高度
             ),
             SizedBox(height: 16.0),
-            Text(
-              "選擇產業",
-              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-            ),
+            Text("選擇產業",
+                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
             ...industries.map((industry) {
               return CheckboxListTile(
                 title: Text(industryTranslations[industry]!),
