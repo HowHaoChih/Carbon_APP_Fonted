@@ -121,7 +121,7 @@ class _TaiwanMapScreenState extends State<TaiwanMapScreen> {
       "南投縣": context.l10n.nantou_county,
       "新北市": context.l10n.new_taipei_city,
       "台南市": context.l10n.tainan_city,
-      "台東縣": context.l10n.taitung_city,
+      "台東縣": context.l10n.taitung_county,
       "嘉義市": context.l10n.chiayi_city,
       "嘉義縣": context.l10n.chiayi_county,
       "基隆市": context.l10n.keelung_city,

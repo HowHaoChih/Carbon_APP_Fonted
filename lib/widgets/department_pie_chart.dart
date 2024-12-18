@@ -9,13 +9,11 @@ class DepartmentPieChart extends StatefulWidget {
   final int year;
   final String city;
   final int? month;
-  final String? title; // 新增可選標題
 
   const DepartmentPieChart({
     required this.year,
     required this.city,
     this.month,
-    this.title, // 默認為 null
     super.key,
   });
 
@@ -33,9 +31,22 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     _loadData();
   }
 
+  @override
+  void didUpdateWidget(covariant DepartmentPieChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 當 year, city, 或 month 發生變化時重新載入數據
+    if (oldWidget.year != widget.year ||
+        oldWidget.city != widget.city ||
+        oldWidget.month != widget.month) {
+      _loadData();
+    }
+  }
+
   void _loadData() async {
-    departmentData = {};
-    setState(() {});
+    setState(() {
+      departmentData.clear(); // 清空舊數據
+    });
+
     final allDataFiles = {
       "Residential": await rootBundle.loadString(
           'assets/data/ResidentialSector_CarbonEmissions_10ktonCO2e.csv'),
@@ -60,10 +71,11 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
         for (var i = 1; i < rows.length; i++) {
           final row = rows[i].split(',');
           final year = int.parse(row[0]);
-          final month = row.length > 1 ? int.parse(row[1]) : null;
           final cityIndex = CityUtils.getCityIndex(widget.city, context);
           final value = double.parse(row[cityIndex]);
 
+          // 確保月份存在，否則忽略月份過濾
+          final month = row.length > 1 ? int.parse(row[1]) : null;
           if (year == widget.year &&
               (widget.month == null || month == widget.month)) {
             departmentData.update(department, (v) => v + value,
@@ -74,9 +86,11 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
       }
     }
 
-    for (final department in departmentData.keys) {
-      final value = departmentData[department]!;
-      departmentData[department] = (value / totalDepartmentValue) * 100;
+    // 計算百分比
+    if (totalDepartmentValue > 0) {
+      departmentData.updateAll(
+        (key, value) => (value / totalDepartmentValue) * 100,
+      );
     }
 
     setState(() {});
@@ -94,42 +108,28 @@ class _DepartmentPieChartState extends State<DepartmentPieChart> {
     final double pieChartSize = maxDimension * 0.8;
 
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          if (widget.title != null) ...[
-            Text(
-              widget.title!,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: departmentData.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
-                  : SizedBox(
-                      width: pieChartSize,
-                      height: pieChartSize,
-                      child: PieChart(
-                        PieChartData(
-                          sections: _getSections(radius),
-                          sectionsSpace: 1,
-                          centerSpaceRadius: radius / 3,
-                          borderData: FlBorderData(show: false),
-                        ),
-                      ),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: departmentData.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : SizedBox(
+                  width: pieChartSize,
+                  height: pieChartSize,
+                  child: PieChart(
+                    PieChartData(
+                      sections: _getSections(radius),
+                      sectionsSpace: 1,
+                      centerSpaceRadius: radius / 3,
+                      borderData: FlBorderData(show: false),
                     ),
-            ),
-          ),
-        ],
+                  ),
+                ),
+        ),
       ),
     );
   }

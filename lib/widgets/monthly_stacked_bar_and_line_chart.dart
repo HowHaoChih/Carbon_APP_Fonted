@@ -137,70 +137,87 @@ class _MonthlyStackedBarAndLineChartState
         padding: const EdgeInsets.all(8.0),
         child: barGroups.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : Stack(
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      barGroups: barGroups,
-                      gridData: FlGridData(
-                        show: true,
-                        getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey.withOpacity(0.2),
-                          strokeWidth: 1,
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      titlesData: FlTitlesData(
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, _) {
-                              if (value < 0 || value >= 12)
-                                return const Text('');
-                              return Text('${(value + 1).toInt()}',
-                                  style: const TextStyle(fontSize: 10));
-                            },
-                          ),
-                        ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, _) {
-                              return Text(value.toInt().toString(),
-                                  style: const TextStyle(fontSize: 10));
-                            },
-                            reservedSize: 30,
-                          ),
-                        ),
-                        topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false)),
-                      ),
-                      maxY: adjustedMaxValue,
+                  // 左側刻度
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0), // 與圖表分隔
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(6, (index) {
+                        final value = (adjustedMaxValue / 5 * index).toInt();
+                        return Text(
+                          value.toString(),
+                          style: const TextStyle(fontSize: 10),
+                        );
+                      }).reversed.toList(),
                     ),
                   ),
-                  LineChart(
-                    LineChartData(
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: lineData,
-                          isCurved: true,
-                          barWidth: 2,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey
-                              : Colors.black,
-                          belowBarData: BarAreaData(show: false),
+                  // 圖表區域
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            barGroups: barGroups,
+                            gridData: FlGridData(
+                              show: true,
+                              getDrawingHorizontalLine: (value) => FlLine(
+                                color: Colors.grey.withOpacity(0.2),
+                                strokeWidth: 1,
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            titlesData: FlTitlesData(
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, _) {
+                                    if (value < 0 || value >= 12) {
+                                      return const Text('');
+                                    }
+                                    return Text('${(value + 1).toInt()}',
+                                        style: const TextStyle(fontSize: 10));
+                                  },
+                                ),
+                              ),
+                              leftTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false)),
+                              rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false)),
+                            ),
+                            maxY: adjustedMaxValue,
+                          ),
+                        ),
+                        LineChart(
+                          LineChartData(
+                            lineBarsData: [
+                              LineChartBarData(
+                                spots: lineData,
+                                isCurved: true,
+                                barWidth: 2,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.grey
+                                    : Colors.black,
+                                belowBarData: BarAreaData(show: false),
+                              ),
+                            ],
+                            titlesData: FlTitlesData(show: false),
+                            gridData: FlGridData(show: false),
+                            borderData: FlBorderData(show: false),
+                            minX: -0.5,
+                            maxX: 11.5,
+                            minY: 0,
+                            maxY: adjustedMaxValue,
+                          ),
                         ),
                       ],
-                      titlesData: FlTitlesData(show: false),
-                      gridData: FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      minX: -1.2,
-                      maxX: 11.5,
-                      minY: -0.2,
-                      maxY: adjustedMaxValue,
                     ),
                   ),
                 ],
