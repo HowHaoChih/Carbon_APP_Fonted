@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'add_favorite.dart';
 import 'industry_page.dart';
+import '../utils/city_utils.dart';
+import '../l10n/l10n.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -58,25 +60,73 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
+    // 動態翻譯縣市與產業名稱
+    String translateCity(String cityKey) {
+      final cityMap = {
+        "context.l10n.taipei_city": l10n.taipei_city,
+        "context.l10n.new_taipei_city": l10n.new_taipei_city,
+        "context.l10n.taoyuan_city": l10n.taoyuan_city,
+        "context.l10n.taizhong_city": l10n.taizhong_city,
+        "context.l10n.tainan_city": l10n.tainan_city,
+        "context.l10n.kaohsiung_city": l10n.kaohsiung_city,
+        "context.l10n.hsinchu_city": l10n.hsinchu_city,
+        "context.l10n.hsinchu_county": l10n.hsinchu_county,
+        "context.l10n.miaoli_county": l10n.miaoli_county,
+        "context.l10n.changhua_county": l10n.changhua_county,
+        "context.l10n.nantou_county": l10n.nantou_county,
+        "context.l10n.yunlin_county": l10n.yunlin_county,
+        "context.l10n.chiayi_city": l10n.chiayi_city,
+        "context.l10n.chiayi_county": l10n.chiayi_county,
+        "context.l10n.pingtung_county": l10n.pingtung_county,
+        "context.l10n.yilan_county": l10n.yilan_county,
+        "context.l10n.hualien_county": l10n.hualien_county,
+        "context.l10n.taitung_county": l10n.taitung_county,
+        "context.l10n.penghu_county": l10n.penghu_county,
+        "context.l10n.kinmen_county": l10n.kinmen_county,
+        "context.l10n.lienchiang_county": l10n.lienchiang_county,
+        "context.l10n.keelung_city": l10n.keelung_city,
+      };
+      return cityMap[cityKey] ?? cityKey;
+    }
+
+    String translateIndustry(String industryKey) {
+      final industryMap = {
+        "context.l10n.residential": l10n.residential,
+        "context.l10n.services": l10n.services,
+        "context.l10n.energy": l10n.energy,
+        "context.l10n.manufacturing": l10n.manufacturing,
+        "context.l10n.transportation": l10n.transportation,
+        "context.l10n.electricity": l10n.electricity,
+      };
+      return industryMap[industryKey] ?? industryKey;
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text("我的最愛")),
+      appBar: AppBar(title: Text(l10n.favorites_title)),
       body: favorites.isEmpty
-          ? Center(child: Text("尚未建立我的最愛，按下右下角按鈕新增"))
+          ? Center(child: Text(l10n.no_favorites_message))
           : ListView.builder(
         itemCount: favorites.length,
         itemBuilder: (context, index) {
           final favorite = favorites[index];
+          final translatedCity = translateCity(favorite['縣市']);
+          final translatedIndustries = (favorite['產業'] as List)
+              .map((industry) => translateIndustry(industry))
+              .join(', ');
+
           return Card(
             margin: EdgeInsets.all(8.0),
             child: ListTile(
-              title: Text("縣市: ${favorite['縣市']}"),
-              subtitle: Text("產業: ${(favorite['產業'] as List).join(', ')}"),
+              title: Text("${l10n.city_label}: $translatedCity"),
+              subtitle: Text("${l10n.industry_label}: $translatedIndustries"),
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: Text("選擇操作"),
-                    content: Text("請選擇要執行的操作"),
+                    title: Text(l10n.action_prompt),
+                    content: Text(l10n.choose_action_message),
                     actions: [
                       TextButton(
                         onPressed: () {
@@ -91,14 +141,14 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             ),
                           );
                         },
-                        child: Text("跳轉至指定頁面"),
+                        child: Text(l10n.navigate_action),
                       ),
                       TextButton(
                         onPressed: () async {
                           Navigator.pop(context);
                           await deleteFavorite(index);
                         },
-                        child: Text("刪除最愛"),
+                        child: Text(l10n.delete_action),
                       ),
                     ],
                   ),
@@ -116,7 +166,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           );
           loadFavorites();
         },
-        tooltip: "新增我的最愛",
+        tooltip: l10n.add_favorite_tooltip,
         child: const Icon(Icons.add),
       ),
     );

@@ -28,33 +28,68 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
   // 縣市列表
   late List<String> cities;
 
-  Set<String> selectedDepartments = DepartmentUtils.getAllDepartments().toSet();
+  Set<String> selectedDepartments = {};
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 在此時初始化 cities 並設定預設選中的城市
+
+    // 初始化城市列表和選中的城市
     cities = CityUtils.getCountiesWithNation(context);
-    selectedCity = widget.initialCity ?? cities.first; // 預設選中第一個城市
+
+    final cityMap = {
+      "context.l10n.taipei_city": context.l10n.taipei_city,
+      "context.l10n.new_taipei_city": context.l10n.new_taipei_city,
+      "context.l10n.taoyuan_city": context.l10n.taoyuan_city,
+      "context.l10n.taizhong_city": context.l10n.taizhong_city,
+      "context.l10n.tainan_city": context.l10n.tainan_city,
+      "context.l10n.kaohsiung_city": context.l10n.kaohsiung_city,
+      "context.l10n.hsinchu_city": context.l10n.hsinchu_city,
+      "context.l10n.hsinchu_county": context.l10n.hsinchu_county,
+      "context.l10n.miaoli_county": context.l10n.miaoli_county,
+      "context.l10n.changhua_county": context.l10n.changhua_county,
+      "context.l10n.nantou_county": context.l10n.nantou_county,
+      "context.l10n.yunlin_county": context.l10n.yunlin_county,
+      "context.l10n.chiayi_city": context.l10n.chiayi_city,
+      "context.l10n.chiayi_county": context.l10n.chiayi_county,
+      "context.l10n.pingtung_county": context.l10n.pingtung_county,
+      "context.l10n.yilan_county": context.l10n.yilan_county,
+      "context.l10n.hualien_county": context.l10n.hualien_county,
+      "context.l10n.taitung_county": context.l10n.taitung_county,
+      "context.l10n.penghu_county": context.l10n.penghu_county,
+      "context.l10n.kinmen_county": context.l10n.kinmen_county,
+      "context.l10n.lienchiang_county": context.l10n.lienchiang_county,
+      "context.l10n.keelung_city": context.l10n.keelung_city,
+    };
+
+    selectedCity = cityMap[widget.initialCity] ?? cities.first;
+
+    // 處理產業名稱從原始資料轉換為顯示名稱
     if (widget.initialIndustries != null) {
-      selectedDepartments = widget.initialIndustries!.toSet();
+      final industryMap = {
+        "context.l10n.residential": "Residential",
+        "context.l10n.services": "Services",
+        "context.l10n.energy": "Energy",
+        "context.l10n.manufacturing": "Manufacturing",
+        "context.l10n.transportation": "Transportation",
+        "context.l10n.electricity": "Electricity",
+      };
+
+      selectedDepartments = widget.initialIndustries!
+          .map((industryKey) => industryMap[industryKey] ?? industryKey)
+          .toSet();
     } else {
       selectedDepartments = allDepartments.toSet();
     }
   }
 
-  // 選中的產業
-
-
   @override
   Widget build(BuildContext context) {
-    // 將產業列表分為 2 行
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark; // 判斷是否為黑暗模式
-    final departmentList = allDepartments;
-    final firstRow =
-        departmentList.sublist(0, (departmentList.length / 2).ceil());
-    final secondRow =
-        departmentList.sublist((departmentList.length / 2).ceil());
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // 將產業列表分為兩行
+    final firstRow = allDepartments.sublist(0, (allDepartments.length / 2).ceil());
+    final secondRow = allDepartments.sublist((allDepartments.length / 2).ceil());
 
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +97,8 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 16), // 增加間距
+          const SizedBox(height: 16),
+
           // 縣市選擇器
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -77,7 +113,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
-                    selectedCity = value; // 更新選中的縣市
+                    selectedCity = value;
                   });
                 }
               },
@@ -85,10 +121,12 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 labelText: context.l10n.select_city,
                 border: OutlineInputBorder(),
               ),
-              menuMaxHeight: 400, // 設置最大展開高度
+              menuMaxHeight: 400,
             ),
           ),
-          const SizedBox(height: 16), // 增加間距
+
+          const SizedBox(height: 16),
+
           // 產業篩選器
           Column(
             children: [
@@ -106,40 +144,40 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
-                            selectedDepartments = Set.from(selectedDepartments)
-                              ..add(department);
+                            selectedDepartments.add(department);
                           } else {
-                            selectedDepartments = Set.from(selectedDepartments)
-                              ..remove(department);
+                            selectedDepartments.remove(department);
                           }
                         });
                       },
                       backgroundColor: isDarkMode
-                          ? Colors.black.withOpacity(0.1) // 暗色模式下的空心背景
-                          : Colors.white.withOpacity(0.9), // 亮色模式下的空心背景
+                          ? Colors.black.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.9),
                       selectedColor: DepartmentUtils.getDepartmentColor(
                         department,
                         isDarkMode: isDarkMode,
-                      ).withOpacity(1.0), // 選中時的背景色
+                      ).withOpacity(1.0),
                       side: BorderSide(
                         color: DepartmentUtils.getDepartmentColor(
                           department,
                           isDarkMode: isDarkMode,
                         ),
-                        width: 2.0, // 邊框寬度
+                        width: 2.0,
                       ),
                       labelStyle: TextStyle(
                         color: selectedDepartments.contains(department)
-                          ? Colors.black // 選中時字體顏色為黑色
-                          : (isDarkMode ? Colors.white : Colors.black), // 未選中時依據模式設定
+                            ? Colors.black
+                            : (isDarkMode ? Colors.white : Colors.black),
                         fontSize: 14,
                       ),
-                      checkmarkColor: Colors.black, // 勾勾的顏色設置為黑色
+                      checkmarkColor: Colors.black,
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 8), // 行間距
+
+              const SizedBox(height: 8),
+
               // 第二行
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -154,53 +192,52 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
-                            selectedDepartments = Set.from(selectedDepartments)
-                              ..add(department);
+                            selectedDepartments.add(department);
                           } else {
-                            selectedDepartments = Set.from(selectedDepartments)
-                              ..remove(department);
+                            selectedDepartments.remove(department);
                           }
                         });
                       },
                       backgroundColor: isDarkMode
-                          ? Colors.black.withOpacity(0.1) // 暗色模式下的空心背景
-                          : Colors.white.withOpacity(0.9), // 亮色模式下的空心背景
+                          ? Colors.black.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.9),
                       selectedColor: DepartmentUtils.getDepartmentColor(
                         department,
                         isDarkMode: isDarkMode,
-                      ).withOpacity(1.0), // 選中時的背景色
+                      ).withOpacity(1.0),
                       side: BorderSide(
                         color: DepartmentUtils.getDepartmentColor(
                           department,
                           isDarkMode: isDarkMode,
                         ),
-                        width: 2.0, // 邊框寬度
+                        width: 2.0,
                       ),
                       labelStyle: TextStyle(
                         color: selectedDepartments.contains(department)
-                          ? Colors.black // 選中時字體顏色為黑色
-                          : (isDarkMode ? Colors.white : Colors.black), // 未選中時依據模式設定
+                            ? Colors.black
+                            : (isDarkMode ? Colors.white : Colors.black),
                         fontSize: 14,
                       ),
-                      checkmarkColor: Colors.black, // 勾勾的顏色設置為黑色
+                      checkmarkColor: Colors.black,
                     ),
                   );
                 }).toList(),
               ),
             ],
           ),
-          const SizedBox(height: 16), // 增加間距
+
+          const SizedBox(height: 16),
+
           // 圖表展示
           SizedBox(
-            height:
-                MediaQuery.of(context).size.height * 0.4, // 將圖表高度設置為屏幕高度的 40%
+            height: MediaQuery.of(context).size.height * 0.4,
             child: Row(
               children: [
-                const SizedBox(width: 16), // 左側新增 16 像素的空白
+                const SizedBox(width: 16),
                 Expanded(
                   child: StackedBarAndLineChart(
-                    city: selectedCity, // 傳入 "Total" 或縣市名稱
-                    selectedDepartments: selectedDepartments, // 傳入選中的產業
+                    city: selectedCity,
+                    selectedDepartments: selectedDepartments,
                   ),
                 ),
               ],

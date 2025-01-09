@@ -40,8 +40,8 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("輸入錯誤"),
-              content: Text("請選擇縣市與至少一個產業"),
+              title: Text(context.l10n.error),
+              content: Text(context.l10n.least_choose),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -56,7 +56,49 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
         return;
       }
 
-      final newFavorite = {"縣市": selectedCity, "產業": selectedIndustries};
+      // 產業對應翻譯映射
+      final Map<String, String> industryTranslations = {
+        "Residential": "context.l10n.residential",
+        "Services": "context.l10n.services",
+        "Energy": "context.l10n.energy",
+        "Manufacturing": "context.l10n.manufacturing",
+        "Transportation": "context.l10n.transportation",
+        "Electricity": "context.l10n.electricity",
+      };
+
+      // 使用 context.l10n 格式產業名稱作為存儲格式
+      final translatedIndustries = selectedIndustries.map((industry) {
+        return industryTranslations[industry]!; // 確保統一儲存為 context.l10n 格式
+      }).toList();
+
+      final cityTranslations = {
+        context.l10n.taipei_city: "context.l10n.taipei_city",
+        context.l10n.new_taipei_city: "context.l10n.new_taipei_city",
+        context.l10n.taoyuan_city: "context.l10n.taoyuan_city",
+        context.l10n.taizhong_city: "context.l10n.taizhong_city",
+        context.l10n.tainan_city: "context.l10n.tainan_city",
+        context.l10n.kaohsiung_city: "context.l10n.kaohsiung_city",
+        context.l10n.hsinchu_city: "context.l10n.hsinchu_city",
+        context.l10n.hsinchu_county: "context.l10n.hsinchu_county",
+        context.l10n.miaoli_county: "context.l10n.miaoli_county",
+        context.l10n.changhua_county: "context.l10n.changhua_county",
+        context.l10n.nantou_county: "context.l10n.nantou_county",
+        context.l10n.yunlin_county: "context.l10n.yunlin_county",
+        context.l10n.chiayi_city: "context.l10n.chiayi_city",
+        context.l10n.chiayi_county: "context.l10n.chiayi_county",
+        context.l10n.pingtung_county: "context.l10n.pingtung_county",
+        context.l10n.yilan_county: "context.l10n.yilan_county",
+        context.l10n.hualien_county: "context.l10n.hualien_county",
+        context.l10n.taitung_county: "context.l10n.taitung_county",
+        context.l10n.penghu_county: "context.l10n.penghu_county",
+        context.l10n.kinmen_county: "context.l10n.kinmen_county",
+        context.l10n.lienchiang_county: "context.l10n.lienchiang_county",
+        context.l10n.keelung_city: "context.l10n.keelung_city",
+      };
+
+      final translatedCity = cityTranslations[selectedCity] ?? selectedCity;
+
+      final newFavorite = {"縣市": translatedCity, "產業": translatedIndustries};
 
       final file = await _getFavoriteFile();
       List<dynamic> currentFavorites = [];
@@ -75,9 +117,6 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
     }
   }
 
-  // 縣市列表
-  late List<String> cities = CityUtils.getCountiesWithNation(context);
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n; // 獲取 l10n 實例
@@ -92,8 +131,10 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
       "Electricity": l10n.electricity,
     };
 
+    final cities = CityUtils.getCountiesWithNation(context);
+
     return Scaffold(
-      appBar: AppBar(title: Text("新增我的最愛")),
+      appBar: AppBar(title: Text(context.l10n.add_favorite)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -115,13 +156,13 @@ class _AddFavoritePageState extends State<AddFavoritePage> {
                 }
               },
               decoration: InputDecoration(
-                labelText: context.l10n.select_city,
+                labelText: l10n.select_city,
                 border: OutlineInputBorder(),
               ),
               menuMaxHeight: 400, // 設置最大展開高度
             ),
             SizedBox(height: 16.0),
-            Text("選擇產業",
+            Text(context.l10n.choose_industry,
                 style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
             ...industries.map((industry) {
               return CheckboxListTile(
