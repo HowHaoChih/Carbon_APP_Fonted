@@ -28,7 +28,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
   // 縣市列表
   late List<String> cities;
 
-  Set<String> selectedDepartments = {};
+  Set<String> selectedDepartments = DepartmentUtils.getAllDepartments().toSet();
 
   @override
   void didChangeDependencies() {
@@ -88,8 +88,10 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // 將產業列表分為兩行
-    final firstRow = allDepartments.sublist(0, (allDepartments.length / 2).ceil());
-    final secondRow = allDepartments.sublist((allDepartments.length / 2).ceil());
+    final firstRow =
+        allDepartments.sublist(0, (allDepartments.length / 2).ceil());
+    final secondRow =
+        allDepartments.sublist((allDepartments.length / 2).ceil());
 
     return Scaffold(
       appBar: AppBar(
@@ -135,7 +137,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: firstRow.map((department) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 2.0),
                     child: FilterChip(
                       label: Text(
                         DepartmentUtils.getDepartmentName(context, department),
@@ -144,9 +146,11 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
-                            selectedDepartments.add(department);
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..add(department);
                           } else {
-                            selectedDepartments.remove(department);
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..remove(department);
                           }
                         });
                       },
@@ -183,7 +187,7 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: secondRow.map((department) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 2.0),
                     child: FilterChip(
                       label: Text(
                         DepartmentUtils.getDepartmentName(context, department),
@@ -192,9 +196,11 @@ class _IndustryViewScreenState extends State<IndustryViewScreen> {
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
-                            selectedDepartments.add(department);
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..add(department);
                           } else {
-                            selectedDepartments.remove(department);
+                            selectedDepartments = Set.from(selectedDepartments)
+                              ..remove(department);
                           }
                         });
                       },
